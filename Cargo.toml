@@ -1,0 +1,18 @@
+[package]
+name = "furl-cli"
+description = "A fast, multithreaded CLI downloader built in Rust."
+version = "0.1.0"
+edition = "2024"
+readme = "README.md"
+keywords = ["downloader", "cli", "multithreaded", "http"]
+
+[lib]
+name = "furl_cli"
+path = "src/lib.rs"
+
+
+[[bin]]
+name = "furl"
+path = "src/main.rs"
+
+[dependencies]

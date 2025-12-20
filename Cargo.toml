@@ -4,7 +4,15 @@ description = "A fast, multithreaded CLI downloader built in Rust."
 version = "0.1.0"
 edition = "2024"
 readme = "README.md"
+license = "Apache-2.0"
+authors = ["Sudip Ghimire"]
+homepage = "https://github.com/ghimiresdp/furl-cli"
+repository = "https://github.com/ghimiresdp/furl-cli"
 keywords = ["downloader", "cli", "multithreaded", "http"]
+categories = ["command-line-utilities", "network-programming"]
+
+
+exclude = ["target/", "Cargo.lock", ".github/"]
 
 [lib]
 name = "furl_cli"

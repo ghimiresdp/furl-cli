@@ -15,7 +15,7 @@ categories = ["command-line-utilities", "network-programming"]
 exclude = ["target/", "Cargo.lock", ".github/"]
 
 [lib]
-name = "furl_cli"
+name = "furl_core"
 path = "src/lib.rs"
 
 

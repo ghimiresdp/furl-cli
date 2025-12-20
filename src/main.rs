@@ -1,5 +1,16 @@
+//! # `furl-cli`
+//!
+//! A fast, multithreaded CLI downloader built in Rust.
+//!
+//! ## Usage
+//!
+//! ```bash
+//! furl [URL]
+//! ```
+//!
+
 use clap::Parser;
-use furl_cli::Downloader;
+use furl_core::Downloader;
 use regex::Regex;
 use std::process::exit;
 
@@ -7,7 +18,7 @@ use std::path::Path;
 
 #[derive(Debug, Parser)]
 #[command(version, about, long_about=None)]
-struct Args {
+struct CliArgs {
     #[arg()]
     url: String,
 
@@ -18,7 +29,7 @@ struct Args {
 
 #[tokio::main]
 async fn main() {
-    let args = Args::parse();
+    let args = CliArgs::parse();
     let path = Path::new(&args.dest);
     if !path.exists() {
         println!("The destination path does not exist");

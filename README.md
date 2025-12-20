@@ -1,10 +1,10 @@
-# furl-cli
+# fURL (`furl-cli`)
 
 A fast, multithreaded CLI downloader built in Rust.
 
 furl is a high-performance command-line tool designed to download files faster
 by utilizing multiple threads to fetch chunks of data concurrently. Inspired by
-the simplicity of curl and the robustness of wget.
+the simplicity of cURL and the robustness of wget.
 
 > [!NOTE]
 > ⚠️ WORK IN PROGRESS: This project is currently in early development.
@@ -55,9 +55,9 @@ furl https://example.com/large-file.iso -o my-file.iso -t 8
 
 ## 🗺 Roadmap
 
-- [ ] Multithreaded chunk downloading
+- [x] Multithreaded chunk downloading
 - [ ] Basic CLI argument parsing (clap)
-- [ ] Real-time progress bars
+- [x] Real-time progress bars
 - [ ] Resume interrupted downloads (Checkpoints)
 - [ ] Support for Proxy and Basic Auth
 - [ ] Config file support (furl.toml)
@@ -71,6 +71,8 @@ Contributions are welcome! Since this is a WIP, please open an issue first to di
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)`
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+For more details, please check [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 📄 License
 

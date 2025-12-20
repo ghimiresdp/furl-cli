@@ -43,14 +43,31 @@ cargo build --release
 
 ## 🛠 Usage
 
+### without output directory
+
+when no output directory is passed, it automatically downloads the file in the
+current terminal directory (PWD).
+
 ```bash
-furl [URL] -o [FILENAME] -t [THREADS]
+furl [URL]
 ```
 
 **Example:**
 
 ```bash
-furl https://example.com/large-file.iso -o my-file.iso -t 8
+furl https://example.com/large-file.iso
+```
+
+### with output directory
+
+```bash
+furl [URL] -o [path/to/the/directory]
+```
+
+**Example:**
+
+```bash
+furl https://example.com/large-file.iso -o ~/Downloads
 ```
 
 ## 🗺 Roadmap
@@ -64,7 +81,8 @@ furl https://example.com/large-file.iso -o my-file.iso -t 8
 
 ## 🤝 Contributing
 
-Contributions are welcome! Since this is a WIP, please open an issue first to discuss the changes you'd like to make.
+Contributions are welcome! Since this is a WIP, please open an issue first to
+discuss the changes you'd like to make.
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -76,8 +94,10 @@ For more details, please check [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 📄 License
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0.
+See the [LICENSE](LICENSE) file for details.
 
 ### Third-Party Licenses
 
-This software uses several open-source components. You can view the full list of dependencies and their licenses using `cargo-license`:
+This software uses several open-source components. You can view the full list of
+dependencies and their licenses using `cargo-license`:

@@ -17,20 +17,22 @@ use std::process::exit;
 use std::path::Path;
 
 #[derive(Debug, Parser)]
-#[command(version, about, long_about=None)]
+#[command(version, about, long_about=None, arg_required_else_help(true))]
 struct CliArgs {
+    /// url to download the file from
     #[arg()]
     url: String,
 
-    #[arg(default_value_t = String::from("."))]
-    dest: String,
+    /// output directory, defaults to the current directory
+    #[arg(short, long, default_value_t = String::from("."))]
+    out: String,
     // TODO: add arguments for number of threads, etc.
 }
 
 #[tokio::main]
 async fn main() {
     let args = CliArgs::parse();
-    let path = Path::new(&args.dest);
+    let path = Path::new(&args.out);
     if !path.exists() {
         println!("The destination path does not exist");
         exit(1);
@@ -40,7 +42,7 @@ async fn main() {
     let re = Regex::new(r"https?://[^\s/$.?#].[^\s]*").unwrap();
     if let Some(_) = re.captures(&args.url) {
         let mut downloader = Downloader::new(&args.url);
-        if let Ok(_) = downloader.download(&args.dest).await {
+        if let Ok(_) = downloader.download(&args.out).await {
             println!("Download Complete!")
         }
     } else {

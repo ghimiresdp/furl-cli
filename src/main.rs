@@ -1,5 +1,5 @@
 use clap::Parser;
-use furl_cli::Downloader;
+use furl_core::Downloader;
 use regex::Regex;
 use std::process::exit;
 

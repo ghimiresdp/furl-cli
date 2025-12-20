@@ -2,14 +2,20 @@
 
 A fast, multithreaded CLI downloader built in Rust.
 
+furl is a high-performance command-line tool designed to download files faster
+by utilizing multiple threads to fetch chunks of data concurrently. Inspired by
+the simplicity of curl and the robustness of wget.
+
 > [!NOTE]
 > ⚠️ WORK IN PROGRESS: This project is currently in early development.
 > The core multithreaded engine is functional, but features like advanced
 > authentication and complex retry logic are still being implemented.
-
-furl is a high-performance command-line tool designed to download files faster
-by utilizing multiple threads to fetch chunks of data concurrently. Inspired by
-the simplicity of curl and the robustness of wget.
+>
+> furl is a successor to my previous project
+> [ghimiresdp/rust-raid](https://github.com/ghimiresdp/rust-raid)'s
+> `cget` download manager.
+> It incorporates refined logic and improved multithreading from that original
+> implementation.
 
 ## ✨ Features
 

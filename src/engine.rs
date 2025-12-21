@@ -256,7 +256,7 @@ impl Downloader {
                     let progress_bar = multi_progress_clone.add(ProgressBar::new(chunk_size));
                     progress_bar.set_style(ProgressStyle::with_template(
                         &format!(
-                            "[Chunk {}] {{wide_bar:40.cyan/blue}} {{binary_bytes}}/{{binary_total_bytes}} ({{percent}}%)",
+                            "[Chunk {:03}] {{wide_bar:40.cyan/blue}} {{binary_bytes}}/{{binary_total_bytes}} ({{percent}}%)",
                             // chunk index starts from 0, but 1 seems natural for human
                             i+1
                         )

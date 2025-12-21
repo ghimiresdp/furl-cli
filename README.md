@@ -6,11 +6,9 @@ furl is a high-performance command-line tool designed to download files faster
 by utilizing multiple threads to fetch chunks of data concurrently. Inspired by
 the simplicity of cURL and the robustness of wget.
 
+![Example image](res/images/example.png)
+
 > [!NOTE]
-> ⚠️ WORK IN PROGRESS: This project is currently in early development.
-> The core multithreaded engine is functional, but features like advanced
-> authentication and complex retry logic are still being implemented.
->
 > furl is a successor to my previous project
 > [ghimiresdp/rust-raid](https://github.com/ghimiresdp/rust-raid)'s
 > `cget` download manager.
@@ -73,6 +71,7 @@ furl https://example.com/large-file.iso -o ~/Downloads
 ## 🗺 Roadmap
 
 - [x] Multithreaded chunk downloading
+- [x] Customize number of threads with arguments
 - [ ] Basic CLI argument parsing (clap)
 - [x] Real-time progress bars
 - [ ] Resume interrupted downloads (Checkpoints)

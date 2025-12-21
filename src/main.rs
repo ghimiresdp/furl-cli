@@ -26,13 +26,18 @@ struct CliArgs {
     /// output directory, defaults to the current directory
     #[arg(short, long, default_value_t = String::from("."))]
     out: String,
-    // TODO: add arguments for number of threads, etc.
+
+    /// Number of threads, defaults to 8, maximum allowed 255
+    #[arg(short, long, default_value_t = 8)]
+    threads: u8,
 }
 
 #[tokio::main]
 async fn main() {
     let args = CliArgs::parse();
     let path = Path::new(&args.out);
+    let threads = args.threads;
+
     if !path.exists() {
         println!("The destination path does not exist");
         exit(1);
@@ -42,11 +47,11 @@ async fn main() {
     let re = Regex::new(r"https?://[^\s/$.?#].[^\s]*").unwrap();
     if let Some(_) = re.captures(&args.url) {
         let mut downloader = Downloader::new(&args.url);
-        if let Ok(_) = downloader.download(&args.out).await {
+        if let Ok(_) = downloader.download(&args.out, Some(threads)).await {
             println!("Download Complete!")
         }
-    } else {
-        println!("Invalid Url parameter provided");
-        exit(1);
+        return;
     }
+    println!("Invalid URL provided");
+    return;
 }

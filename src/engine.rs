@@ -102,9 +102,9 @@ pub fn extract_filename_from_url(url: &str) -> Option<String> {
 }
 
 impl Downloader {
-    pub fn new(url: &str) -> Self {
+    pub fn new<S: Into<String>>(url: S) -> Self {
         Self {
-            url: url.to_owned(),
+            url: url.into(),
             headers: HeaderMap::new(),
             file_size: None,
             filename: None,
@@ -162,11 +162,24 @@ impl Downloader {
         Ok(downloaded)
     }
 
+    /// downloads the file into the provided path
+    /// # Arguments
+    ///
+    /// * `path`: download path
+    /// * `threads`: number of threads to use for downloading.
+    ///   if you pass None, or Some(0), it will defaults to 8
+    ///
     pub async fn download(
         &mut self,
         path: &str,
+        threads: Option<u8>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let client = reqwest::Client::new();
+        let threads: u64 = match threads {
+            Some(0) => 8,
+            Some(count) => count as u64,
+            None => 8,
+        };
         // get response headers to get file name, length, etc.
         let response = client
             .get(&self.url)
@@ -204,7 +217,7 @@ impl Downloader {
             file.lock().await.set_len(file_size).await?;
 
             let mut start = 0;
-            let byte_size = file_size / 8;
+            let byte_size = file_size / threads;
 
             // split chunks to download
             while start < file_size {
@@ -242,7 +255,11 @@ impl Downloader {
                     let chunk_size = end - start + 1;
                     let progress_bar = multi_progress_clone.add(ProgressBar::new(chunk_size));
                     progress_bar.set_style(ProgressStyle::with_template(
-                        &format!("[Chunk {}] {{wide_bar:40.cyan/blue}} {{binary_bytes}}/{{binary_total_bytes}} ({{percent}}%)", i)
+                        &format!(
+                            "[Chunk {}] {{wide_bar:40.cyan/blue}} {{binary_bytes}}/{{binary_total_bytes}} ({{percent}}%)",
+                            // chunk index starts from 0, but 1 seems natural for human
+                            i+1
+                        )
                     ).unwrap());
 
                     // Create a downloader instance for this chunk
@@ -295,9 +312,7 @@ impl Downloader {
                     self.filename.as_ref().unwrap()
                 ))
                 .unwrap()
-                // .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"),
-                // set tick character as a moon's phase as progress indicator
-                .tick_chars("🌑🌒🌓🌔🌕🌖🌗🌘"),
+                .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"),
             );
             let _ = self
                 .get_chunk(None, Some(bar), Some(file_clone), None)

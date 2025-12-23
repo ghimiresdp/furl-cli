@@ -74,6 +74,10 @@ impl HeaderUtils for HeaderMap {
         // TODO: guess filename from content type
     }
 
+    /// Returns the file size in bytes.
+    ///
+    /// If the content-length is is not found or not extracted, it just returns
+    /// Error
     fn extract_file_size(&self) -> Result<u64, Box<dyn std::error::Error + Send + Sync>> {
         let &cr = &self
             .get(CONTENT_RANGE)
@@ -169,6 +173,14 @@ impl Downloader {
     /// * `threads`: number of threads to use for downloading.
     ///   if you pass None, or Some(0), it will defaults to 8
     ///
+    /// Note: If the download size is less than 1 MB, then it will completely
+    /// ignore threads, and download it as a single thread.
+    ///
+    /// If the file size is unknown at the moment it gets the header, it will
+    /// also ignore threads and skips the progress bar and just shows a simple
+    /// ticker as a feedback to let user know that the process is not is in a
+    /// deadlock state.
+    ///
     pub async fn download(
         &mut self,
         path: &str,
@@ -217,7 +229,13 @@ impl Downloader {
             file.lock().await.set_len(file_size).await?;
 
             let mut start = 0;
-            let byte_size = file_size / threads;
+            let mut byte_size = file_size / threads;
+
+            //ignore threads if the file is less than a MB.
+            if file_size < 1024 * 1024 {
+                println!("ℹ️ The file is smaller than 1 MB, so skipping threads.");
+                byte_size = file_size;
+            }
 
             // split chunks to download
             while start < file_size {

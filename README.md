@@ -10,8 +10,8 @@ the simplicity of cURL and the robustness of wget.
 
 ## ✨ Features
 
-- **Parallel Downloads**: Automatically splits large files into chunks and
-  downloads them across multiple threads.
+- **Smart Parallel Downloads**: Automatically splits large files into chunks and
+  downloads them across multiple threads when needed and size is known.
 - **Modern Async**: Built on top of `tokio` and `reqwest` for maximum efficiency.
 - **Visual Progress**: Beautiful, real-time progress bars using `indicatif`.
 - **Rust Powered**: Memory-safe and "fearless" concurrency.
@@ -98,6 +98,7 @@ async fn main(){
 - [x] Customize number of threads with arguments
 - [x] Basic CLI argument parsing (clap)
 - [x] Real-time progress bars
+- [x] Smart Threading (Completely ignore threading for files smaller than 1 MB).
 - [ ] Resume interrupted downloads (Checkpoints)
 - [ ] Support for Proxy and Basic Auth
 - [ ] Config file support (furl.toml)

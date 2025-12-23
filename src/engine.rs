@@ -207,15 +207,14 @@ impl Downloader {
                 None => "download.bin".to_owned(),
             },
         };
-        println!("⛔filename: {filename}");
-        // trim trailing / from original path
+        println!("Downloading \"{filename}\"");
         self.filename = Some(format!("{path}/{filename}").replace("//", "/"));
 
         if let Ok(file_size) = self.headers.extract_file_size() {
             self.file_size = Some(file_size);
-            println!("⛔file size: {}", HumanBytes(file_size));
+            println!("file size: {}", HumanBytes(file_size));
         } else {
-            println!("⛔ Unable to determine the file size. skipping threads")
+            println!("Unable to determine the file size. skipping threads");
         }
 
         let file = Arc::new(Mutex::new(
@@ -320,6 +319,8 @@ impl Downloader {
                 HumanBytes(total_downloaded)
             );
         } else {
+            // continue without threads when the file size is unknown
+            // and just display ticks instead of progressbar since the size is unknown.
             let file_clone = Arc::clone(&file);
             let bar = ProgressBar::new_spinner();
             bar.enable_steady_tick(Duration::from_millis(100));

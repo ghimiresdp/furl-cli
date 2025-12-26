@@ -22,6 +22,11 @@
 //! }
 //!
 //! ```
-pub mod engine;
+// pub mod core;
 
-pub use engine::Downloader;
+mod core;
+
+pub use core::config;
+pub use core::engine;
+
+pub use core::engine::Downloader;

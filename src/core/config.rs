@@ -1,5 +1,6 @@
 use std::{fs, path::PathBuf};
 
+#[derive(Debug, Clone, Default)]
 pub struct FurlConfig {
     config_dir: PathBuf,
 }
@@ -15,12 +16,15 @@ impl FurlConfig {
                     "Could not find config directory.",
                 )
             })?
-            .join("furl_cli");
+            .join(format!(
+                "furl-cli/{}",
+                if cfg!(debug_assertions) { "dev" } else { "" }
+            ));
         fs::create_dir_all(&config_dir)?;
 
         Ok(Self { config_dir })
     }
-    pub fn get_db_file(&self) -> PathBuf {
+    pub fn get_db_path(&self) -> PathBuf {
         self.config_dir.join("db.json")
     }
     // TODO: ADD CUSTOM CONFIG IN THE FUTURE

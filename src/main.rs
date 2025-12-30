@@ -13,11 +13,13 @@ use furl_core::{cli, config};
 
 #[tokio::main]
 async fn main() {
-    if let Ok(config) = config::FurlConfig::init() {
-        let cli = cli::parse();
-        return cli.execute(Some(config)).await;
-    }
-
-    println!("Config path does not exist. Are you on supported OS?");
-    return;
+    let config = match config::FurlConfig::init() {
+        Ok(config) => config,
+        Err(_) => {
+            println!("Config does not exist, using default config");
+            config::FurlConfig::default()
+        }
+    };
+    let cli = cli::parse();
+    return cli.execute(config).await;
 }

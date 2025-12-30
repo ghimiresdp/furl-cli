@@ -187,7 +187,7 @@ impl Downloader {
         &mut self,
         path: &str,
         threads: Option<u8>,
-        config: Option<FurlConfig>,
+        config: FurlConfig,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let client = reqwest::Client::new();
         let threads: u64 = match threads {

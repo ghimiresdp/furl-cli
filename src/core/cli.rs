@@ -30,7 +30,7 @@ pub struct Cli {
 }
 
 impl FurlSubCommands {
-    pub async fn execute(&self, config: Option<FurlConfig>) {
+    pub async fn execute(&self, config: FurlConfig) {
         match self {
             FurlSubCommands::config => {
                 println!("⛔⛔ updating configuration")
@@ -40,7 +40,7 @@ impl FurlSubCommands {
 }
 
 impl Cli {
-    pub async fn execute(&self, config: Option<FurlConfig>) {
+    pub async fn execute(&self, config: FurlConfig) {
         if let Some(ref cmd) = self.subcommand {
             return cmd.execute(config).await;
         } else {

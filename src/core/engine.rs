@@ -1,15 +1,16 @@
 use std::{cmp::min, error::Error, sync::Arc, time::Duration};
 
+use futures_util::{StreamExt, future};
+use indicatif::{HumanBytes, MultiProgress, ProgressBar, ProgressStyle};
 use reqwest::{
     self, Url,
     header::{CONTENT_DISPOSITION, CONTENT_RANGE, HeaderMap, RANGE},
 };
-// use tokio::stream;
-use futures_util::{StreamExt, future};
-use indicatif::{HumanBytes, MultiProgress, ProgressBar, ProgressStyle};
 use tokio::fs::File;
 use tokio::io::{AsyncSeekExt, AsyncWriteExt, SeekFrom};
 use tokio::sync::Mutex;
+
+use crate::config::FurlConfig;
 
 #[derive(Debug)]
 struct Chunk {
@@ -28,12 +29,13 @@ impl Chunk {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Downloader {
     url: String,
     headers: HeaderMap,
     file_size: Option<u64>,
     filename: Option<String>,
+    // config: Option<FurlConfig>,
     chunks: Arc<Mutex<Vec<Chunk>>>, // this stores downloaded chunk size
 }
 
@@ -185,6 +187,7 @@ impl Downloader {
         &mut self,
         path: &str,
         threads: Option<u8>,
+        config: Option<FurlConfig>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let client = reqwest::Client::new();
         let threads: u64 = match threads {

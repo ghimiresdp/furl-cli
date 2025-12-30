@@ -26,7 +26,7 @@
 
 mod core;
 
+pub use core::cli;
 pub use core::config;
 pub use core::engine;
-
 pub use core::engine::Downloader;

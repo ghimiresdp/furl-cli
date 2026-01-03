@@ -13,7 +13,7 @@ use furl_core::{cli, config};
 
 #[tokio::main]
 async fn main() {
-    let config = match config::FurlConfig::init() {
+    let config = match config::FurlConfig::load() {
         Ok(config) => config,
         Err(_) => {
             println!("Config does not exist, using default config");

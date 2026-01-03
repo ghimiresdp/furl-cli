@@ -33,7 +33,11 @@ impl FurlSubCommands {
     pub async fn execute(&self, config: FurlConfig) {
         match self {
             FurlSubCommands::config => {
-                println!("⛔⛔ updating configuration")
+                if let Ok(config) = FurlConfig::load() {
+                    println!("Config: {:?}", config);
+                } else {
+                    println!("⛔⛔ error loading configuration configuration");
+                }
             }
         }
     }
@@ -45,15 +49,14 @@ impl Cli {
             return cmd.execute(config).await;
         } else {
             // handle download actions
-            let path = Path::new(&self.out);
-            let threads = self.threads;
+            let path = Path::new(&config.download_dir);
+            let threads = config.threads;
 
             if !path.exists() {
                 println!("The destination path does not exist");
                 return;
             }
 
-            // println!("⛔ Path: {:?}", config.get_db_path());
             if let Some(url) = &self.url {
                 // TODO: add extensive url pattern matcher
                 let re = Regex::new(r"https?://[^\s/$.?#].[^\s]*").unwrap();

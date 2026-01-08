@@ -7,7 +7,7 @@ use crate::{Downloader, config::FurlConfig};
 
 #[derive(Debug, Subcommand)]
 pub enum FurlSubCommands {
-    config,
+    Config,
 }
 
 #[derive(Debug, Parser)]
@@ -32,7 +32,7 @@ pub struct Cli {
 impl FurlSubCommands {
     pub async fn execute(&self, config: FurlConfig) {
         match self {
-            FurlSubCommands::config => {
+            FurlSubCommands::Config => {
                 if let Ok(config) = FurlConfig::load() {
                     println!("Config: {:?}", config);
                 } else {

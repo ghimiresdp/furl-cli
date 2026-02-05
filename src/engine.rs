@@ -1,4 +1,12 @@
-use std::{cmp::min, error::Error, sync::Arc, time::Duration};
+use std::{
+    cmp::min,
+    error::Error,
+    sync::{
+        Arc,
+        atomic::{AtomicUsize, Ordering},
+    },
+    time::Duration,
+};
 
 use reqwest::{
     self, Url,
@@ -262,51 +270,69 @@ impl Downloader {
             let mut tasks = Vec::new();
             let chunks_clone = Arc::clone(&self.chunks);
 
-            for i in 0..num_chunks {
+            // Use a fixed-size worker pool and an atomic index so we don't spawn one task per chunk.
+            // Each worker atomically pulls the next chunk index and processes it, which creates
+            // queue-like behavior while keeping the number of concurrent tasks limited to `threads`.
+            let index = Arc::new(AtomicUsize::new(0));
+
+            // limit number of workers to at most num_chunks
+            let threads_to_spawn = std::cmp::min(threads as usize, num_chunks);
+
+            for _ in 0..threads_to_spawn {
                 let chunks = Arc::clone(&chunks_clone);
                 let file_clone = Arc::clone(&file);
                 let url = self.url.clone();
                 let multi_progress_clone = Arc::clone(&multi_progress);
+                let index_clone = Arc::clone(&index);
 
                 let task = tokio::spawn(async move {
-                    // Get chunk info
-                    let (start, end) = {
-                        let chunks_guard = chunks.lock().await;
-                        if i >= chunks_guard.len() {
-                            return Err("Chunk index out of bounds".into());
+                    let mut worker_total: u64 = 0;
+                    loop {
+                        // fetch next chunk index
+                        let i = index_clone.fetch_add(1, Ordering::SeqCst);
+                        if i >= num_chunks {
+                            break;
                         }
-                        (chunks_guard[i].start_byte, chunks_guard[i].end_byte)
-                    };
 
-                    // Create progress bar for this chunk
-                    let chunk_size = end - start + 1;
-                    let progress_bar = multi_progress_clone.add(ProgressBar::new(chunk_size));
-                    progress_bar.set_style(ProgressStyle::with_template(
-                        &format!(
-                            "[Chunk {:03}] {{wide_bar:40.cyan/blue}} {{binary_bytes}}/{{binary_total_bytes}} ({{percent}}%)",
-                            // chunk index starts from 0, but 1 seems natural for human
-                            i+1
-                        )
-                    ).unwrap());
+                        // Get chunk info
+                        let (start, end) = {
+                            let chunks_guard = chunks.lock().await;
+                            (chunks_guard[i].start_byte, chunks_guard[i].end_byte)
+                        };
 
-                    // Create a downloader instance for this chunk
-                    let downloader = Downloader {
-                        url,
-                        headers: HeaderMap::new(),
-                        file_size: None,
-                        filename: None,
-                        chunks: chunks,
-                    };
+                        // Create progress bar for this chunk
+                        let chunk_size = end - start + 1;
+                        let progress_bar = multi_progress_clone.add(ProgressBar::new(chunk_size));
+                        progress_bar.set_style(ProgressStyle::with_template(
+                            &format!(
+                                "[Chunk {:03}] {{wide_bar:40.cyan/blue}} {{binary_bytes}}/{{binary_total_bytes}} ({{percent}}%)",
+                                // chunk index starts from 0, but 1 seems natural for human
+                                i + 1
+                            )
+                        ).unwrap());
 
-                    // Download the chunk
-                    downloader
-                        .get_chunk(
-                            Some((start, end)),
-                            Some(progress_bar),
-                            Some(file_clone),
-                            Some(i),
-                        )
-                        .await
+                        // Create a downloader instance for this chunk
+                        let downloader = Downloader {
+                            url: url.clone(),
+                            headers: HeaderMap::new(),
+                            file_size: None,
+                            filename: None,
+                            chunks: Arc::clone(&chunks),
+                        };
+
+                        // Download the chunk and accumulate the bytes downloaded by this worker
+                        let downloaded = downloader
+                            .get_chunk(
+                                Some((start, end)),
+                                Some(progress_bar),
+                                Some(Arc::clone(&file_clone)),
+                                Some(i),
+                            )
+                            .await?;
+                        worker_total += downloaded;
+                    }
+
+                    Ok::<u64, Box<dyn std::error::Error + Send + Sync>>(worker_total)
                 });
 
                 tasks.push(task);

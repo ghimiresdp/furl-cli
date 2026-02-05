@@ -11,6 +11,9 @@ use tokio::fs::File;
 use tokio::io::{AsyncSeekExt, AsyncWriteExt, SeekFrom};
 use tokio::sync::Mutex;
 
+const _1MB: u64 = 1024 * 1024;
+const _10MB: u64 = 10 * 1024 * 1024;
+
 #[derive(Debug)]
 struct Chunk {
     start_byte: u64,
@@ -228,12 +231,19 @@ impl Downloader {
             file.lock().await.set_len(file_size).await?;
 
             let mut start = 0;
-            let mut byte_size = file_size / threads;
+            let thread_size = file_size / threads;
+            let mut byte_size = thread_size;
 
             //ignore threads if the file is less than a MB.
-            if file_size < 1024 * 1024 {
+            if file_size < _1MB {
                 println!("ℹ️ The file is smaller than 1 MB, so skipping threads.");
                 byte_size = file_size;
+            }
+
+            // if the byte size is larger than 10 MB, split into 10 MB chunks
+            // so that memory consumption is less.
+            if thread_size > _10MB {
+                byte_size = _10MB
             }
 
             // split chunks to download

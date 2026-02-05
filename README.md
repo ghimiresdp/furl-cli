@@ -11,7 +11,9 @@ the simplicity of cURL and the robustness of wget.
 ## ✨ Features
 
 - **Smart Parallel Downloads**: Automatically splits large files into chunks and
-  downloads them across multiple threads when needed and size is known.
+  downloads them across multiple threads when needed and size is known. Also
+  automatically shrinks the maximum length of chunk to 10MB for better resource
+  utilization.
 - **Modern Async**: Built on top of `tokio` and `reqwest` for maximum efficiency.
 - **Visual Progress**: Beautiful, real-time progress bars using `indicatif`.
 - **Rust Powered**: Memory-safe and "fearless" concurrency.

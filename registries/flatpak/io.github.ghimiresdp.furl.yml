@@ -1,0 +1,16 @@
+app-id: io.github.ghimiresdp.furl
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+command: furl
+finish-args:
+  - --share=network
+modules:
+  - name: furl
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 furl /app/bin/furl
+    sources:
+      - type: archive
+        url: https://github.com/ghimiresdp/furl-cli/releases/download/v0.6.2/furl-v0.6.2-linux-x86_64.tar.gz
+        sha256: REPLACE_WITH_ACTUAL_SHA256

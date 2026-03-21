@@ -14,7 +14,7 @@ Installers:
     InstallerType: zip
     NestedInstallerType: portable
     InstallerUrl: https://github.com/ghimiresdp/furl-cli/releases/download/v0.6.2/furl-v0.6.2-windows-x86_64.zip
-    InstallerSha256: REPLACE_WITH_ACTUAL_SHA256
+    InstallerSha256: sha256:a2ae2c1216cfcfbd4484aef6e60c7451804adc2cc81142abb98434442cdfdd87
     NestedInstallerFiles:
       - RelativeFilePath: furl.exe
         PortableCommandAlias: furl

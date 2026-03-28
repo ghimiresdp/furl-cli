@@ -23,19 +23,44 @@ the simplicity of cURL and the robustness of wget.
 
 ## Installation
 
-### From Crates.io (Recommended)
+You can install `furl` using WinGet, Cargo, or by building it from source.
 
-```bash
+### Windows (Recommended: WinGet)
+
+For Windows users, WinGet is the recommended installation method.
+Requirement: WinGet must be available on your system (included by default on modern Windows 10/11 setups).
+
+```shell
+winget install ghimiresdp.furl
+```
+
+### Crates.io
+
+Use this method on any platform where Rust is installed.
+Requirement: Rust toolchain and Cargo must be installed.
+Install Rust from the official guide: <https://www.rust-lang.org/tools/install>
+
+```shell
 cargo install furl-cli
 ```
 
 ### From Source
 
-```bash
+Use this method if you want to build from the latest source code or contribute changes.
+Requirement: Git, Rust toolchain, and Cargo must be installed.
+Install Rust from the official guide: <https://www.rust-lang.org/tools/install>
+
+```shell
 git clone https://github.com/ghimiresdp/furl-cli.git
-cd furl
+cd furl-cli
 cargo build --release
 ```
+
+### Pre-built Binaries
+
+If `furl` is not yet available in your package manager, you can download pre-built binaries from the **Assets** section of the [latest release](https://github.com/ghimiresdp/furl-cli/releases/latest).
+
+If you need an older version, browse all published releases in the [Releases](https://github.com/ghimiresdp/furl-cli/releases) section and check the **Assets** section for that release.
 
 ## 🛠 Usage
 
@@ -104,6 +129,11 @@ async fn main(){
 - [x] Basic CLI argument parsing (clap)
 - [x] Real-time progress bars
 - [x] Smart Threading (Completely ignore threading for files smaller than 1 MB).
+- [x] Package manager support (Windows: WinGet)
+- [ ] Package manager support (Linux: APT)
+- [ ] Package manager support (Linux: Flatpak)
+- [ ] Package manager support (Linux: Snap)
+- [ ] Package manager support (macOS: Homebrew)
 - [ ] Resume interrupted downloads (Checkpoints)
 - [ ] Support for Proxy and Basic Auth
 - [ ] Config file support (furl.toml)

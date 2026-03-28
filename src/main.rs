@@ -27,6 +27,10 @@ struct CliArgs {
     #[arg(short, long, default_value_t = String::from("."))]
     out: String,
 
+    /// output filename, defaults to the filename in the url
+    #[arg(short, long)]
+    filename: Option<String>,
+
     /// Number of threads, defaults to 8, maximum allowed 255
     #[arg(short, long, default_value_t = 8)]
     threads: u8,
@@ -37,6 +41,7 @@ async fn main() {
     let args = CliArgs::parse();
     let path = Path::new(&args.out);
     let threads = args.threads;
+    let filename = args.filename;
 
     if !path.exists() {
         println!("The destination path does not exist");
@@ -47,7 +52,11 @@ async fn main() {
     let re = Regex::new(r"https?://[^\s/$.?#].[^\s]*").unwrap();
     if re.captures(&args.url).is_some() {
         let mut downloader = Downloader::new(&args.url);
-        if downloader.download(&args.out, Some(threads)).await.is_ok() {
+        if downloader
+            .download(&args.out, filename, Some(threads))
+            .await
+            .is_ok()
+        {
             println!("Download Complete!")
         }
         return;

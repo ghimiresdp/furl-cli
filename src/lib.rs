@@ -19,8 +19,8 @@
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 //!     let mut downloader = Downloader::new("https://example.com/files/file_1.txt");
-//!     // download into the tmp directory using default thread count
-//!     downloader.download("./tmp", Some("file_123.txt".to_string()), None).await?;
+//!     // download into the current directory using default thread count and custom filename
+//!     downloader.download(".", Some("file_123.txt".to_string()), None).await?;
 //!     Ok(())
 //! }
 //! ```

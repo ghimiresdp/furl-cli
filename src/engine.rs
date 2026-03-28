@@ -195,6 +195,7 @@ impl Downloader {
     pub async fn download(
         &mut self,
         path: &str,
+        filename: Option<String>,
         threads: Option<u8>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let client = reqwest::Client::new();
@@ -211,12 +212,16 @@ impl Downloader {
             .await?;
         self.headers = response.headers().clone().to_owned();
 
-        let filename = match &self.headers.extract_filename() {
-            Ok(filename) => filename.to_owned(),
-            Err(_) => match extract_filename_from_url(&self.url) {
-                Some(filename) => filename,
-                None => "download.bin".to_owned(),
-            },
+        let filename = if let Some(filename) = filename {
+            filename
+        } else {
+            match &self.headers.extract_filename() {
+                Ok(filename) => filename.to_owned(),
+                Err(_) => match extract_filename_from_url(&self.url) {
+                    Some(filename) => filename,
+                    None => "download.dat".to_owned(),
+                },
+            }
         };
         println!("Downloading \"{filename}\"");
         self.filename = Some(format!("{path}/{filename}").replace("//", "/"));

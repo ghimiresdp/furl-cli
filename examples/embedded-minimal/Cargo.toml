@@ -7,5 +7,5 @@ publish = false
 [dependencies]
 # instead of using the workspace, you should use version from crates.io for your application
 # example: furl-cli = "0.8.0"
-furl-cli = { path = "../../crates/furl_cli" }
+furl-core = { path = "../../crates/furl-core", features = ["progress"] }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

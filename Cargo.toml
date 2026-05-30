@@ -6,7 +6,7 @@ members = [
     # examples
     "examples/*",
 ]
-default-members = ["crates/furl_cli"]
+# default-members = ["crates/furl-cli"]
 
 
 resolver = "3"

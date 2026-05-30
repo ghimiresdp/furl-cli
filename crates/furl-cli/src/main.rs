@@ -10,8 +10,9 @@
 //!
 
 use clap::Parser;
+use furl_cli::FurlCliArgs;
 use furl_core::engine::DownloadConfig;
-use furl_core::{Downloader, FurlCliArgs, GraphicalProgressReporter};
+use furl_core::{Downloader, GraphicalProgressReporter};
 use regex::Regex;
 use std::process::exit;
 
@@ -19,7 +20,11 @@ use std::path::Path;
 
 #[tokio::main]
 async fn main() {
-    let args = FurlCliArgs::parse();
+    let args = FurlCliArgs::try_parse().unwrap_or_else(|e| {
+        eprintln!("Error parsing arguments: {}", e);
+        std::process::exit(1);
+    });
+
     let path = Path::new(&args.out);
     let threads = args.threads;
     let filename = args.filename;

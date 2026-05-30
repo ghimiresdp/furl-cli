@@ -1,0 +1,11 @@
+[package]
+name = "embedded-minimal"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+# instead of using the workspace, you should use version from crates.io for your application
+# example: furl-cli = "0.8.0"
+furl-cli = { path = "../../crates/furl_cli" }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

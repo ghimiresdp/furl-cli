@@ -5,22 +5,38 @@ use std::{
         Arc,
         atomic::{AtomicUsize, Ordering},
     },
-    time::Duration,
 };
 
 use reqwest::{
     self, Url,
     header::{CONTENT_DISPOSITION, CONTENT_RANGE, HeaderMap, RANGE},
 };
+
 // use tokio::stream;
 use futures_util::{StreamExt, future};
-use indicatif::{HumanBytes, MultiProgress, ProgressBar, ProgressStyle};
-use tokio::fs::File;
-use tokio::io::{AsyncSeekExt, AsyncWriteExt, SeekFrom};
-use tokio::sync::Mutex;
+use tokio::{
+    fs::File,
+    io::{AsyncSeekExt, AsyncWriteExt, SeekFrom},
+    sync::Mutex,
+};
 
 const _1MB: u64 = 1024 * 1024;
 const _10MB: u64 = 10 * 1024 * 1024;
+
+pub trait ProgressReporter: Send + Sync {
+    fn on_start(&self, chunk_index: usize, total_bytes: u64);
+    fn on_progress(&self, chunk_index: usize, bytes_downloaded: u64);
+    fn on_finish(&self, chunk_index: usize);
+}
+
+// No-op for consumers who don't care about progress
+pub struct NoopReporter;
+
+impl ProgressReporter for NoopReporter {
+    fn on_start(&self, _chunk_index: usize, _total_bytes: u64) {}
+    fn on_progress(&self, _chunk_index: usize, _bytes_downloaded: u64) {}
+    fn on_finish(&self, _chunk_index: usize) {}
+}
 
 #[derive(Debug)]
 struct Chunk {
@@ -39,13 +55,37 @@ impl Chunk {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone)]
+pub struct DownloadConfig {
+    pub max_chunk_size: u64,
+}
+
+impl DownloadConfig {
+    pub fn new() -> Self {
+        Self {
+            max_chunk_size: _10MB,
+        }
+    }
+    pub fn set_max_chunk_size(mut self, size: u64) -> Self {
+        self.max_chunk_size = size;
+        self
+    }
+}
+
+impl Default for DownloadConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct Downloader {
     url: String,
     headers: HeaderMap,
     file_size: Option<u64>,
     filename: Option<String>,
     chunks: Arc<Mutex<Vec<Chunk>>>, // this stores downloaded chunk size
+    reporter: Arc<dyn ProgressReporter + Send + Sync>,
+    config: Arc<DownloadConfig>,
 }
 
 pub trait HeaderUtils {
@@ -124,13 +164,28 @@ impl Downloader {
             file_size: None,
             filename: None,
             chunks: Arc::new(Mutex::new(Vec::new())),
+            reporter: Arc::new(NoopReporter),
+            config: Arc::new(DownloadConfig::default()),
         }
+    }
+
+    pub fn with_config(mut self, config: DownloadConfig) -> Self {
+        self.config = Arc::new(config);
+        self
+    }
+
+    pub fn with_reporter<R: ProgressReporter + Send + Sync + 'static>(
+        mut self,
+        reporter: R,
+    ) -> Self {
+        self.reporter = Arc::new(reporter);
+        self
     }
 
     async fn get_chunk(
         &self,
         range: Option<(u64, u64)>,
-        progress_bar: Option<ProgressBar>,
+        reporter: Arc<dyn ProgressReporter + Send + Sync>,
         file: Option<Arc<Mutex<File>>>,
         chunk_index: Option<usize>,
     ) -> Result<u64, Box<dyn std::error::Error + Send + Sync>> {
@@ -138,21 +193,19 @@ impl Downloader {
         let mut builder = client.get(&self.url);
         if let Some((start, end)) = range {
             builder = builder.header(RANGE, &format!("bytes={start}-{end}"));
+            reporter.on_start(chunk_index.unwrap_or(0), end - start + 1);
         }
         let response = builder.send().await?;
         let mut stream = response.bytes_stream();
         let mut downloaded = 0u64;
         let mut chunk_data = Vec::new();
 
-        // progress_bar
         while let Some(chunk) = stream.next().await {
             let chunk = chunk?;
             chunk_data.extend_from_slice(&chunk);
             downloaded += chunk.len() as u64;
 
-            if let Some(bar) = &progress_bar {
-                bar.inc(chunk.len() as u64);
-            }
+            reporter.on_progress(chunk_index.unwrap_or(0), downloaded);
 
             // Update chunk progress in shared state
             if let Some(idx) = chunk_index {
@@ -170,9 +223,7 @@ impl Downloader {
             f.write_all(&chunk_data).await?;
         }
 
-        if let Some(bar) = progress_bar {
-            bar.finish();
-        }
+        reporter.on_finish(chunk_index.unwrap_or(0));
 
         Ok(downloaded)
     }
@@ -228,7 +279,7 @@ impl Downloader {
 
         if let Ok(file_size) = self.headers.extract_file_size() {
             self.file_size = Some(file_size);
-            println!("file size: {}", HumanBytes(file_size));
+            println!("file size: {}", file_size);
         } else {
             println!("Unable to determine the file size. skipping threads");
         }
@@ -244,32 +295,24 @@ impl Downloader {
             file.lock().await.set_len(file_size).await?;
 
             let mut start = 0;
-            let thread_size = file_size / threads;
-            let mut byte_size = thread_size;
-
-            //ignore threads if the file is less than a MB.
-            if file_size < _1MB {
+            // Determine chunk size: default to per-thread slice, cap at 10 MB for memory,
+            // or use full file if smaller than 1 MB (no threading benefit).
+            let chunk_size = if file_size < _1MB {
                 println!("ℹ️ The file is smaller than 1 MB, so skipping threads.");
-                byte_size = file_size;
-            }
-
-            // if the byte size is larger than 10 MB, split into 10 MB chunks
-            // so that memory consumption is less.
-            if thread_size > _10MB {
-                byte_size = _10MB
-            }
+                file_size
+            } else {
+                (file_size / threads).min(self.config.max_chunk_size)
+            };
 
             // split chunks to download
             while start < file_size {
-                let end = min(start + byte_size, file_size);
+                let end = min(start + chunk_size, file_size);
                 self.chunks.lock().await.push(Chunk::new(start, end));
                 start = end + 1;
             }
 
             let num_chunks = self.chunks.lock().await.len();
             println!("Created {} chunks for download", num_chunks);
-
-            let multi_progress = Arc::new(MultiProgress::new());
 
             // Create tasks for concurrent downloading
             let mut tasks = Vec::new();
@@ -287,8 +330,9 @@ impl Downloader {
                 let chunks = Arc::clone(&chunks_clone);
                 let file_clone = Arc::clone(&file);
                 let url = self.url.clone();
-                let multi_progress_clone = Arc::clone(&multi_progress);
                 let index_clone = Arc::clone(&index);
+                let reporter_clone = Arc::clone(&self.reporter);
+                let config = Arc::clone(&self.config);
 
                 let task = tokio::spawn(async move {
                     let mut worker_total: u64 = 0;
@@ -305,17 +349,6 @@ impl Downloader {
                             (chunks_guard[i].start_byte, chunks_guard[i].end_byte)
                         };
 
-                        // Create progress bar for this chunk
-                        let chunk_size = end - start + 1;
-                        let progress_bar = multi_progress_clone.add(ProgressBar::new(chunk_size));
-                        progress_bar.set_style(ProgressStyle::with_template(
-                            &format!(
-                                "[Chunk {:03}] {{wide_bar:40.cyan/blue}} {{binary_bytes}}/{{binary_total_bytes}} ({{percent}}%)",
-                                // chunk index starts from 0, but 1 seems natural for human
-                                i + 1
-                            )
-                        ).unwrap());
-
                         // Create a downloader instance for this chunk
                         let downloader = Downloader {
                             url: url.clone(),
@@ -323,13 +356,15 @@ impl Downloader {
                             file_size: None,
                             filename: None,
                             chunks: Arc::clone(&chunks),
+                            reporter: Arc::clone(&reporter_clone),
+                            config: Arc::clone(&config),
                         };
 
                         // Download the chunk and accumulate the bytes downloaded by this worker
                         let downloaded = downloader
                             .get_chunk(
                                 Some((start, end)),
-                                Some(progress_bar),
+                                Arc::clone(&reporter_clone),
                                 Some(Arc::clone(&file_clone)),
                                 Some(i),
                             )
@@ -355,27 +390,14 @@ impl Downloader {
                 .into_iter()
                 .sum();
 
-            println!(
-                "Download completed! Total bytes: {}",
-                HumanBytes(total_downloaded)
-            );
+            println!("Download completed! Total bytes: {}", total_downloaded);
         } else {
             // continue without threads when the file size is unknown
             // and just display ticks instead of progressbar since the size is unknown.
             let file_clone = Arc::clone(&file);
-            let bar = ProgressBar::new_spinner();
-            bar.enable_steady_tick(Duration::from_millis(100));
             println!("\n");
-            bar.set_style(
-                ProgressStyle::with_template(&format!(
-                    "{{spinner:.cyan}} {:?} ({{binary_bytes}} downloaded)",
-                    self.filename.as_ref().unwrap()
-                ))
-                .unwrap()
-                .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"),
-            );
             let _ = self
-                .get_chunk(None, Some(bar), Some(file_clone), None)
+                .get_chunk(None, Arc::clone(&self.reporter), Some(file_clone), None)
                 .await;
         }
 
@@ -443,5 +465,16 @@ mod tests {
             assert_eq!(downloader.filename.as_deref(), Some("tmp_download.bin"));
             assert_eq!(downloader.file_size, Some(0));
         });
+    }
+    #[test]
+    fn test_custom_download_config() {
+        let config = DownloadConfig::new().set_max_chunk_size(5 * 1024 * 1024);
+        assert_eq!(config.max_chunk_size, 5 * 1024 * 1024);
+    }
+
+    #[test]
+    fn test_default_download_config() {
+        let config = DownloadConfig::new();
+        assert_eq!(config.max_chunk_size, 10 * 1024 * 1024);
     }
 }

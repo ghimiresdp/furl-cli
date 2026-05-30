@@ -10,38 +10,20 @@
 //!
 
 use clap::Parser;
-use furl_core::Downloader;
+use furl_core::engine::DownloadConfig;
+use furl_core::{Downloader, FurlCliArgs, GraphicalProgressReporter};
 use regex::Regex;
 use std::process::exit;
 
 use std::path::Path;
 
-#[derive(Debug, Parser)]
-#[command(version, about, long_about=None, arg_required_else_help(true))]
-struct CliArgs {
-    /// url to download the file from
-    #[arg()]
-    url: String,
-
-    /// output directory, defaults to the current directory
-    #[arg(short, long, default_value_t = String::from("."))]
-    out: String,
-
-    /// output filename, defaults to the filename in the url
-    #[arg(short, long)]
-    filename: Option<String>,
-
-    /// Number of threads, defaults to 8, maximum allowed 255
-    #[arg(short, long, default_value_t = 8)]
-    threads: u8,
-}
-
 #[tokio::main]
 async fn main() {
-    let args = CliArgs::parse();
+    let args = FurlCliArgs::parse();
     let path = Path::new(&args.out);
     let threads = args.threads;
     let filename = args.filename;
+    let chunk_size = args.chunksize;
 
     if !path.exists() {
         println!("The destination path does not exist");
@@ -51,7 +33,13 @@ async fn main() {
     // TODO: add extensive url pattern matcher
     let re = Regex::new(r"https?://[^\s/$.?#].[^\s]*").unwrap();
     if re.captures(&args.url).is_some() {
-        let mut downloader = Downloader::new(&args.url);
+        // use config
+        let download_config =
+            DownloadConfig::new().set_max_chunk_size(chunk_size as u64 * 1024 * 1024);
+
+        let mut downloader = Downloader::new(&args.url)
+            .with_config(download_config)
+            .with_reporter(GraphicalProgressReporter::new());
         if downloader
             .download(&args.out, filename, Some(threads))
             .await

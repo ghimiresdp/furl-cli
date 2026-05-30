@@ -1,32 +1,17 @@
-[package]
-name = "furl-cli"
-description = "A fast, multithreaded CLI downloader built in Rust."
-version = "0.7.0"
-edition = "2024"
-readme = "README.md"
-license = "Apache-2.0"
-authors = ["Sudip Ghimire"]
-homepage = "https://github.com/ghimiresdp/furl-cli"
-repository = "https://github.com/ghimiresdp/furl-cli"
-keywords = ["downloader", "cli", "multithreaded", "http"]
-categories = ["command-line-utilities", "network-programming"]
+[workspace]
 
+members = [
+    # main crates
+    "crates/*",
+    # examples
+    "examples/*",
+]
+default-members = ["crates/furl_cli"]
+
+
+resolver = "3"
 
 exclude = ["target/", "Cargo.lock", ".github/"]
 
-[lib]
-name = "furl_core"
-path = "src/lib.rs"
-
-
-[[bin]]
-name = "furl"
-path = "src/main.rs"
-
-[dependencies]
-clap = { version = "4.5.53", features = ["derive"] }
-futures-util = "0.3.31"
-indicatif = "0.18.3"
-regex = "1.12.2"
-reqwest = { version = "0.12.26", features = ["json", "stream"] }
-tokio = { version = "1.48.0", features = ["rt-multi-thread", "macros"] }
+[workspace.dependencies]
+tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }

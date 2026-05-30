@@ -1,0 +1,9 @@
+[package]
+name = "no-indicator"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+furl-cli = { path = "../../crates/furl_cli", default-features = false }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

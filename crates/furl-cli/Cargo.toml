@@ -1,11 +1,11 @@
 [package]
 name = "furl-cli"
 description = "A fast, multithreaded CLI downloader built in Rust."
-version = "0.8.1"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
 publish = true
 readme = "README.md"
-license = "Apache-2.0"
 authors = ["Sudip Ghimire"]
 homepage = "https://github.com/ghimiresdp/furl-cli"
 repository = "https://github.com/ghimiresdp/furl-cli"

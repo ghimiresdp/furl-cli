@@ -3,6 +3,28 @@
 //! fURL core package includes different structs and functions that can be used
 //! in your package for downloading files without using `furl-cli`.
 //!
+//! ## installation
+//!
+//! While using furl-core, you do not need to install default features unless
+//! you want to use the progress reporter or the cli features.
+//!
+//! You can add `furl-cli` to your project by adding it to your `cargo.toml` file.
+//! or you can use the command line to add it to your project.
+//!
+//! ### cli
+//! ```bash
+//! cargo add furl-cli --no-default-features
+//! ```
+//!
+//! ### `cargo.toml`
+//! ```toml
+//! [dependencies]
+//! furl-cli = { version = "0.8.1", default-features = false }
+//!
+//! # example async library for async operations
+//! tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }
+//! ```
+//!
 //! ## Example Usecase
 //!
 //! since the package implements multi-threaded downloading, it is expected to

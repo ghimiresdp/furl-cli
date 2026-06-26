@@ -261,7 +261,7 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 name = "embedded-minimal"
 version = "0.1.0"
 dependencies = [
- "furl-cli",
+ "furl-core",
  "tokio",
 ]
 
@@ -315,6 +315,19 @@ checksum = "42703706b716c37f96a77aea830392ad231f44c9e9a67872fa5548707e11b11c"
 
 [[package]]
 name = "furl-cli"
+version = "0.8.1"
+dependencies = [
+ "clap",
+ "furl-core",
+ "futures-util",
+ "indicatif",
+ "regex",
+ "reqwest",
+ "tokio",
+]
+
+[[package]]
+name = "furl-core"
 version = "0.8.1"
 dependencies = [
  "clap",
@@ -820,7 +833,7 @@ dependencies = [
 name = "no-indicator"
 version = "0.1.0"
 dependencies = [
- "furl-cli",
+ "furl-core",
  "tokio",
 ]
 

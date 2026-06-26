@@ -67,13 +67,13 @@ environment where everyone feels welcome and valued.
 
 Install package `cargo-workspaces`
 
-```shell
+```sh
 cargo install cargo-workspaces
 ```
 
 Run `cargo workspaces` or `cargo ws` command
 
-```shell
+```sh
 # major version
 cargo ws version major
 
@@ -82,4 +82,7 @@ cargo ws version minor
 
 # patch version
 cargo ws version patch
+
+# pre release version
+cargo ws version minor --pre-id alpha
 ```

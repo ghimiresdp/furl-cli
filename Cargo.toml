@@ -1,4 +1,6 @@
 [workspace]
+resolver = "3"
+exclude = ["target/", "Cargo.lock", ".github/"]
 
 members = [
     # main crates
@@ -6,12 +8,14 @@ members = [
     # examples
     "examples/*",
 ]
-default-members = ["crates/furl_cli"]
+default-members = ["crates/furl"]
+
+[workspace.package]
+license = "Apache-2.0"
+edition = "2024"
 
 
-resolver = "3"
-
-exclude = ["target/", "Cargo.lock", ".github/"]
 
 [workspace.dependencies]
 tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }
+furl-core = { version = "0.8.1", path = "crates/furl-core" }

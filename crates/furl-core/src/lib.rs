@@ -55,7 +55,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! furl-core = { version = "0.8.0", features = ["progress"] }
+//! furl-core = { version = "*", features = ["progress"] }
 //!
 //! ```
 pub mod engine;
@@ -63,9 +63,4 @@ pub mod features;
 
 pub use engine::{DownloadConfig, Downloader, ProgressReporter};
 
-// re-exporting features for easier access
-#[cfg(feature = "progress")]
-pub use features::progress::GraphicalProgressReporter;
-
-#[cfg(feature = "cli")]
-pub use features::cli::FurlCliArgs;
+pub use features::*;

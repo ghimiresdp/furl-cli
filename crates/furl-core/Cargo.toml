@@ -1,7 +1,7 @@
 [package]
 name = "furl-core"
 description = "A fast, multithreaded downloader library built in Rust."
-version="0.9.0-alpha.0"
+version="0.9.0"
 edition.workspace = true
 license.workspace = true
 publish = true
@@ -10,14 +10,12 @@ authors = ["Sudip Ghimire"]
 homepage = "https://github.com/ghimiresdp/furl-cli"
 repository = "https://github.com/ghimiresdp/furl-cli"
 keywords = [
-    "downloader",
-    "cli",
-    "multithreaded",
-    "http",
-    "library",
-    "download-library",
+  "downloader",
+  "multithreaded",
+  "download-library",
+  "network-programming",
 ]
-categories = ["network-programming", "libraries", "asynchronous"]
+categories = ["network-programming", "asynchronous"]
 exclude = ["target/", "Cargo.lock", ".github/", "examples/"]
 
 [lib]

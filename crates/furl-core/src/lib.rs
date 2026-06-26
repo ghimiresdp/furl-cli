@@ -33,7 +33,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! furl-core = { version = "0.8.0", features = ["progress"] }
+//! furl-core = { version = "*", features = ["progress"] }
 //!
 //! ```
 pub mod engine;

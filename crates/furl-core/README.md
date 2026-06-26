@@ -5,6 +5,14 @@
 A fast, multithreaded downloader library for Rust — the core engine behind the
 `furl-cli` binary.
 
+> [!NOTE]
+>
+> This crate is intended to be used as a library. For the CLI application, see
+> `furl-cli`. If you were looking for the `furl-core` before `v0.9.0`, it was
+> previously published as the same crate as `furl-cli`. The CLI and core engine
+> have been split into separate crates to make the core easier to reuse and to
+> keep dependencies optional via features.
+
 furl-core contains the downloading logic (chunking, concurrent workers, and a
 progress reporting abstraction) as a small, dependency-light library that you
 can embed in your own async applications. The binary CLI and UI concerns live
@@ -39,10 +47,11 @@ Using crates.io (recommended for applications):
 ```toml
 [dependencies]
 # Replace with the latest version on crates.io
-furl-core = "0.9.0-alpha.1"
+# example: furl-core = "0.9.0-alpha.1"
+furl-core = "*"
 
 # enable progress bars if you want the graphical reporter
-furl-core = { version = "0.9.0-alpha.1", features = ["progress"] }
+furl-core = { version = "*", features = ["progress"] }
 ```
 
 Async example (using `tokio`):

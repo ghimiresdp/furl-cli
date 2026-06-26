@@ -25,3 +25,7 @@ regex = "1.12.3"
 reqwest = { version = "0.13.4", features = ["json", "stream"] }
 clap = { version = "4.6.1", features = ["derive"] }
 indicatif = { version = "0.18.4", optional = true }
+
+
+[package.metadata.workspaces]
+independent = true

@@ -12,10 +12,10 @@ default-members = ["crates/furl"]
 
 [workspace.package]
 license = "Apache-2.0"
-version = "0.8.1"
 edition = "2024"
 
 
 
 [workspace.dependencies]
 tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }
+furl-core = { version = "0.8.1", path = "crates/furl-core" }

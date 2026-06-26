@@ -1,3 +1,4 @@
+#[cfg(feature = "progress")]
 mod progress;
 
 #[cfg(feature = "progress")]

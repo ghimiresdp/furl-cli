@@ -19,3 +19,6 @@ edition = "2024"
 [workspace.dependencies]
 tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }
 furl-core = { version = "0.8.1", path = "crates/furl-core" }
+
+[workspace.metadata.workspaces]
+independent = true

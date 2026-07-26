@@ -9,6 +9,6 @@ publish = false
 # furl-core = { path = "../../crates/furl-core" }
 
 # For standalone use (outside the repository), use the crates.io version:
-furl-core = { version = "0.9.0" }
+furl-core = { version = "^0.9.0" }
 
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

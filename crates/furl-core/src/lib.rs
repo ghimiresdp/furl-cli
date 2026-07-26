@@ -58,9 +58,10 @@
 //! furl-core = { version = "*", features = ["progress"] }
 //!
 //! ```
-pub mod engine;
+pub mod core;
 pub mod features;
 
-pub use engine::{DownloadConfig, Downloader, ProgressReporter};
+pub use core::config::DownloadConfig;
+pub use core::engine::{Downloader, ProgressReporter};
 
 pub use features::*;

@@ -11,7 +11,7 @@
 
 use clap::Parser;
 use furl_cli::FurlCliArgs;
-use furl_core::engine::DownloadConfig;
+use furl_core::DownloadConfig;
 use furl_core::{Downloader, GraphicalProgressReporter};
 use regex::Regex;
 use std::process::exit;

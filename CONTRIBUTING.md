@@ -1,88 +1,76 @@
 # CONTRIBUTING GUIDELINES
 
+Thanks for your interest in contributing! We'd love to have your help improving
+this project.
+
 ## Getting Started
 
-If you are thinking of contributing to this project, you can get started by
-forking the project. Detailed instructions are as follows.
+> [!IMPORTANT]
+> We ask that you follow the Conventional Commits specification for commit
+> messages. Check out [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
+> to learn more.
+>
+> Here are some examples:
+>
+> - `feat(cli): add --timeout option to set request timeout`
+> - `fix(download): retry on 429 Too Many Requests with backoff`
+> - `docs(readme): update usage examples for subcommands`
+> - `style: apply rustfmt formatting (no behavior change)`
+
+Want to contribute? Just fork the project and follow these steps:
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)`
+3. Commit your Changes (`git commit -m 'feat(topic): Add some AmazingFeature'`)`
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-> [!NOTE]
-> _Instructions on creating pull requests is explained in_
-> _[Submitting a Pull Request](#submitting-a-pull-request) section below._
+### Submitting a Pull Request
+
+Before submitting your PR, make sure your branch is up to date with the base
+branch and that there are no merge conflicts.
+
+- Go to your forked repository on GitHub
+- Update your main branch to match the latest upstream changes
+- Create a new branch for your changes
+- Submit a PR with a clear title and description
+- You can use the template at `.github/PULL_REQUEST_TEMPLATE.md` as a guide
 
 ## Code of Conduct
 
 ### Purpose
 
-This Code of Conduct outlines the expected behavior for all participants in the
-community. The goal is to foster a positive, inclusive, and respectful
-environment where everyone feels welcome and valued.
+This Code of Conduct sets expectations for how we treat each other in this
+community. We're committed to creating a welcoming, inclusive, and respectful
+space where everyone feels comfortable contributing.
 
-### Expected Behavior
+### What We Expect
 
-- **Respect**: Treat everyone with respect, regardless of their background or
-  opinions.
-- **Inclusivity**: Promote a welcoming and inclusive environment for all.
-- **Constructive Communication**: Engage in constructive and respectful
-  discussions, avoiding personal attacks or insults.
-- **Openness**: Be open to feedback and criticism, and be willing to learn from
-  others.
-- **Collaboration**: Work together towards the common goal of improving the
-  project.
+Help us keep this community positive and collaborative by:
 
-### Prohibited Behavior
+- Being respectful and professional with everyone
+- Welcoming different perspectives and backgrounds
+- Giving constructive feedback focused on ideas, not people
+- Being open to feedback and learning from mistakes
+- Helping each other and sharing knowledge freely
 
-- **Harassment**: Any form of harassment, including but not limited to:
-  - Sexual harassment
-  - Discrimination
-  - Threats
-  - Bullying
-- **Hate Speech**: Language that promotes hatred or discrimination against any group of people.
-- **Personal Attacks**: Attacks on a person's character or abilities.
-- **Plagiarism**: Claiming credit for work that is not your own.
+### Behavior We Don't Tolerate
 
-> [!IMPORTANT]
-> This Code of Conduct is a living document and may be updated from time to time.
+We take these issues seriously and project maintainers will address them:
 
-## Submitting a Pull Request
+- Harassment, bullying, threats, or abusive language of any kind
+- Hate speech or dehumanizing comments based on who someone is
+- Personal attacks, doxxing, or sharing someone's private information
+- Taking credit for someone else's work
 
-- Navigate to your forked repository on GitHub.
-- Click the "Compare & pull request" button.
-- Add a descriptive title and provide details about your changes.
-  You can see the PR template at `.github/PULL_REQUEST_TEMPLATE.md` file.
-- Submit the pull request.
-
-## Tagging a new version
+If you witness or experience any of these issues, please reach out to the
+maintainers so we can address it promptly.
 
 > [!IMPORTANT]
-> New versions are generally tagged after completing milestones, and will
-> probably be updated automatically with workflows in the future. The
-> instruction below will be useful for developers to know how versions are
-> being tagged in the project.
+> This Code of Conduct is a living document and may be updated as needed.
 
-Install package `cargo-workspaces`
+## Licensing
 
-```sh
-cargo install cargo-workspaces
-```
-
-Run `cargo workspaces` or `cargo ws` command
-
-```sh
-# major version
-cargo ws version major
-
-# minor version
-cargo ws version minor
-
-# patch version
-cargo ws version patch
-
-# pre release version
-cargo ws version minor --pre-id alpha
-```
+When you submit a contribution, you're agreeing to license it under the
+[Apache License](LICENSE). If you have questions or need a different licensing
+arrangement, please open an issue or reach out to the maintainers first.

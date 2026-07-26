@@ -144,7 +144,7 @@ impl Downloader {
             filename: None,
             chunks: Arc::new(Mutex::new(Vec::new())),
             reporter: Arc::new(NoopReporter),
-            config: Arc::new(DownloadConfig::default()),
+            config: Arc::new(DownloadConfig::new()),
         }
     }
 
@@ -448,12 +448,12 @@ mod tests {
     #[test]
     fn test_custom_download_config() {
         let config = DownloadConfig::new().set_max_chunk_size(5 * 1024 * 1024);
-        assert_eq!(config.max_chunk_size, 5 * 1024 * 1024);
+        assert_eq!(config.max_chunk_size, (5 * 1024 * 1024));
     }
 
     #[test]
     fn test_default_download_config() {
         let config = DownloadConfig::new();
-        assert_eq!(config.max_chunk_size, 10 * 1024 * 1024);
+        assert_eq!(config.max_chunk_size, (10 * 1024 * 1024));
     }
 }

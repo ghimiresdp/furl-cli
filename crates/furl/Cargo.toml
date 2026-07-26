@@ -18,13 +18,19 @@ name = "furl"
 path = "src/main.rs"
 
 [dependencies]
-furl-core = { workspace = true, features = ["progress"] }
+# workspace dependencies
+furl-core = { workspace = true, features = ["progress", "serde"] }
+
+# external dependencies
+serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 futures-util = "0.3.32"
 regex = "1.12.3"
 reqwest = { version = "0.13.4", features = ["json", "stream"] }
 clap = { version = "4.6.1", features = ["derive"] }
-indicatif = { version = "0.18.4", optional = true }
+indicatif = { version = "0.18.4" }
+dirs = "6.0.0"
+toml_edit = { version = "0.25.13", features = ["serde"] }
 
 
 [package.metadata.workspaces]

@@ -5,5 +5,10 @@ edition = "2024"
 publish = false
 
 [dependencies]
-furl-core = { path = "../../crates/furl-core" }
+# For local development in the repository, uncomment the path below:
+# furl-core = { path = "../../crates/furl-core" }
+
+# For standalone use (outside the repository), use the crates.io version:
+furl-core = { version = "0.9.0" }
+
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

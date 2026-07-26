@@ -1,0 +1,15 @@
+Source: furl-cli
+Section: utils
+Priority: optional
+Maintainer: Sudip Ghimire <ghimiresdp@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13), cargo, rustc, pkg-config
+Standards-Version: 4.7.0
+Homepage: https://github.com/ghimiresdp/furl-cli
+Rules-Requires-Root: no
+
+Package: furl-cli
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Fast, multithreaded CLI downloader built in Rust
+ furl is a high-performance command-line downloader that can split
+ downloads into chunks and fetch them concurrently.

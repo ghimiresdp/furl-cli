@@ -86,3 +86,15 @@ cargo ws version patch
 # pre release version
 cargo ws version minor --pre-id alpha
 ```
+
+After bumping the version, sync registry metadata files automatically:
+
+```shell
+./scripts/sync_registry_metadata.sh
+```
+
+You can run both in one line, for example:
+
+```shell
+cargo ws version patch && ./scripts/sync_registry_metadata.sh
+```

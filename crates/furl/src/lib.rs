@@ -1,3 +1,4 @@
 mod cli;
+pub mod config;
 
 pub use cli::FurlCliArgs;

@@ -112,8 +112,7 @@ mod tests {
         assert_eq!(config, DownloadConfig::default());
         assert!(path.exists());
         assert_eq!(
-            toml_edit::de::from_str::<DownloadConfig>(&fs::read_to_string(&path).unwrap())
-                .unwrap(),
+            toml_edit::de::from_str::<DownloadConfig>(&fs::read_to_string(&path).unwrap()).unwrap(),
             DownloadConfig::default()
         );
 

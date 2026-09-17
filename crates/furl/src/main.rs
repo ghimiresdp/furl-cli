@@ -10,8 +10,8 @@
 //!
 
 use clap::Parser;
-use furl_cli::config::{format_config, load_config};
-use furl_cli::{ConfigAction, FurlCliArgs, FurlCommand};
+use furl_cli::config::{format_config, get, load_config, persist, set};
+use furl_cli::{FurlCliArgs, FurlCommand};
 use furl_core::{Downloader, GraphicalProgressReporter};
 use regex::Regex;
 use std::process::exit;
@@ -25,9 +25,37 @@ async fn main() {
         std::process::exit(1);
     });
 
-    if let Some(FurlCommand::Config { action }) = args.command {
-        match action {
-            ConfigAction::List => print!("{}", format_config(&load_config())),
+    if let Some(FurlCommand::Config { key, value }) = args.command {
+        let config = load_config();
+
+        let Some(key) = key else {
+            print!("{}", format_config(&config));
+            return;
+        };
+
+        let Some(value) = value else {
+            match get(&config, &key) {
+                Some(value) => println!("{value}"),
+                None => {
+                    eprintln!("Error: unknown configuration key '{key}'");
+                    exit(1);
+                }
+            }
+            return;
+        };
+
+        match set(config, &key, &value) {
+            Ok(updated) => {
+                if let Err(err) = persist(&updated) {
+                    eprintln!("Error: {err}");
+                    exit(1);
+                }
+                println!("{key} = {}", get(&updated, &key).unwrap());
+            }
+            Err(err) => {
+                eprintln!("Error: {err}");
+                exit(1);
+            }
         }
         return;
     }

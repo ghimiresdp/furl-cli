@@ -1,4 +1,4 @@
 mod cli;
 pub mod config;
 
-pub use cli::{ConfigAction, DownloadArgs, FurlCliArgs, FurlCommand};
+pub use cli::{DownloadArgs, FurlCliArgs, FurlCommand};

@@ -12,18 +12,16 @@ pub struct FurlCliArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum FurlCommand {
-    /// view or manage furl's configuration
+    /// view or manage furl's configuration.
+    ///
+    /// `furl config` lists every value, `furl config <key>` prints one
+    /// value, and `furl config <key> <value>` sets and saves it.
     Config {
-        #[command(subcommand)]
-        action: ConfigAction,
+        /// configuration key, e.g. threads, max_chunk_size, download_dir
+        key: Option<String>,
+        /// value to set `key` to; omit to just read the current value
+        value: Option<String>,
     },
-}
-
-#[derive(Debug, Subcommand)]
-pub enum ConfigAction {
-    /// print the effective configuration (config file values, defaults for
-    /// anything not set)
-    List,
 }
 
 #[derive(Debug, Args)]
@@ -102,15 +100,41 @@ mod tests {
     }
 
     #[test]
-    fn parses_config_list_subcommand() {
-        let args = FurlCliArgs::try_parse_from(["furl", "config", "list"]).unwrap();
+    fn parses_bare_config_as_list() {
+        let args = FurlCliArgs::try_parse_from(["furl", "config"]).unwrap();
 
-        assert!(args.download.url.is_none());
         assert!(matches!(
             args.command,
             Some(FurlCommand::Config {
-                action: ConfigAction::List
+                key: None,
+                value: None
             })
+        ));
+    }
+
+    #[test]
+    fn parses_config_with_key_as_get() {
+        let args = FurlCliArgs::try_parse_from(["furl", "config", "threads"]).unwrap();
+
+        assert!(matches!(
+            args.command,
+            Some(FurlCommand::Config {
+                key: Some(ref key),
+                value: None
+            }) if key == "threads"
+        ));
+    }
+
+    #[test]
+    fn parses_config_with_key_and_value_as_set() {
+        let args = FurlCliArgs::try_parse_from(["furl", "config", "threads", "16"]).unwrap();
+
+        assert!(matches!(
+            args.command,
+            Some(FurlCommand::Config {
+                key: Some(ref key),
+                value: Some(ref value)
+            }) if key == "threads" && value == "16"
         ));
     }
 }

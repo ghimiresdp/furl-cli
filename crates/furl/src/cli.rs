@@ -51,3 +51,66 @@ pub struct DownloadArgs {
     #[arg(short, long, value_parser = clap::value_parser!(u8).range(1..=100))]
     pub chunksize: Option<u8>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_url_as_download_without_subcommand() {
+        let args = FurlCliArgs::try_parse_from(["furl", "https://example.com/file.zip"]).unwrap();
+
+        assert!(args.command.is_none());
+        assert_eq!(
+            args.download.url,
+            Some("https://example.com/file.zip".to_string())
+        );
+    }
+
+    #[test]
+    fn parses_download_options() {
+        let args = FurlCliArgs::try_parse_from([
+            "furl",
+            "https://example.com/file.zip",
+            "--out",
+            "/tmp",
+            "--filename",
+            "file.zip",
+            "--threads",
+            "16",
+            "--chunksize",
+            "20",
+        ])
+        .unwrap();
+
+        assert_eq!(args.download.out, Some("/tmp".to_string()));
+        assert_eq!(args.download.filename, Some("file.zip".to_string()));
+        assert_eq!(args.download.threads, Some(16));
+        assert_eq!(args.download.chunksize, Some(20));
+    }
+
+    #[test]
+    fn rejects_threads_above_range() {
+        let result = FurlCliArgs::try_parse_from([
+            "furl",
+            "https://example.com/file.zip",
+            "--threads",
+            "256",
+        ]);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn parses_config_list_subcommand() {
+        let args = FurlCliArgs::try_parse_from(["furl", "config", "list"]).unwrap();
+
+        assert!(args.download.url.is_none());
+        assert!(matches!(
+            args.command,
+            Some(FurlCommand::Config {
+                action: ConfigAction::List
+            })
+        ));
+    }
+}

@@ -29,3 +29,10 @@ pub fn load_config() -> DownloadConfig {
         DownloadConfig::default()
     })
 }
+
+/// Renders a `DownloadConfig` as TOML, in the same shape a user could paste
+/// into their config file.
+pub fn format_config(config: &DownloadConfig) -> String {
+    toml_edit::ser::to_string_pretty(config)
+        .unwrap_or_else(|err| format!("# error serializing config: {err}\n"))
+}

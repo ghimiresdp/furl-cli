@@ -1,11 +1,36 @@
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 
 #[derive(Debug, Parser)]
 #[command(version, about, long_about=None, arg_required_else_help(true))]
 pub struct FurlCliArgs {
+    #[command(subcommand)]
+    pub command: Option<FurlCommand>,
+
+    #[command(flatten)]
+    pub download: DownloadArgs,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum FurlCommand {
+    /// view or manage furl's configuration
+    Config {
+        #[command(subcommand)]
+        action: ConfigAction,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ConfigAction {
+    /// print the effective configuration (config file values, defaults for
+    /// anything not set)
+    List,
+}
+
+#[derive(Debug, Args)]
+pub struct DownloadArgs {
     /// url to download the file from
     #[arg()]
-    pub url: String,
+    pub url: Option<String>,
 
     /// output directory, defaults to the value from the config file, or the
     /// current directory if not configured

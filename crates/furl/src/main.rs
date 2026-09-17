@@ -10,8 +10,8 @@
 //!
 
 use clap::Parser;
-use furl_cli::FurlCliArgs;
-use furl_cli::config::load_config;
+use furl_cli::config::{format_config, load_config};
+use furl_cli::{ConfigAction, FurlCliArgs, FurlCommand};
 use furl_core::{Downloader, GraphicalProgressReporter};
 use regex::Regex;
 use std::process::exit;
@@ -25,19 +25,31 @@ async fn main() {
         std::process::exit(1);
     });
 
+    if let Some(FurlCommand::Config { action }) = args.command {
+        match action {
+            ConfigAction::List => print!("{}", format_config(&load_config())),
+        }
+        return;
+    }
+
+    let Some(url) = args.download.url else {
+        eprintln!("Error: a URL is required");
+        exit(1);
+    };
+
     // config file values, overridden by any CLI args the user passed
     let mut config = load_config();
-    if let Some(out) = args.out {
+    if let Some(out) = args.download.out {
         config = config.set_download_dir(PathBuf::from(out));
     }
-    if let Some(threads) = args.threads {
+    if let Some(threads) = args.download.threads {
         config = config.set_threads(threads);
     }
-    if let Some(chunksize) = args.chunksize {
+    if let Some(chunksize) = args.download.chunksize {
         config = config.set_max_chunk_size(chunksize as u64 * 1024 * 1024);
     }
 
-    let filename = args.filename;
+    let filename = args.download.filename;
 
     if !config.download_dir.exists() {
         println!("The destination path does not exist");
@@ -46,11 +58,11 @@ async fn main() {
 
     // TODO: add extensive url pattern matcher
     let re = Regex::new(r"https?://[^\s/$.?#].[^\s]*").unwrap();
-    if re.captures(&args.url).is_some() {
+    if re.captures(&url).is_some() {
         let out = config.download_dir.to_string_lossy().into_owned();
         let threads = config.threads;
 
-        let mut downloader = Downloader::new(&args.url)
+        let mut downloader = Downloader::new(&url)
             .with_config(config)
             .with_reporter(GraphicalProgressReporter::new());
         if downloader

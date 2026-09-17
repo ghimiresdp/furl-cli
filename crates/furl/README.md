@@ -104,6 +104,31 @@ furl [URL] -o [path/to/the/directory]
 furl https://raw.githubusercontent.com/ghimiresdp/furl-cli/refs/heads/main/res/images/example.png -o ./tmp -t 32
 ```
 
+#### Configuration
+
+`furl` reads defaults for `download_dir`, `threads`, and `max_chunk_size` from
+a config file at `~/.config/.furl/config.toml` (path varies by OS; resolved
+via [`dirs::config_dir()`](https://docs.rs/dirs)). The file is created with
+built-in defaults the first time `furl` runs. Any `--out`, `--threads`, or
+`--chunksize` flag you pass on the command line overrides the config file for
+that run only.
+
+Manage it with the `furl config` subcommand:
+
+```bash
+# list every value
+furl config
+
+# read a single value
+furl config threads
+
+# set and save a value
+furl config threads 16
+
+# restore the built-in defaults
+furl config --reset
+```
+
 ### Library Mode
 
 In library mode, you can just import the `Downloader` struct and use its
@@ -156,7 +181,7 @@ directory. These are standalone workspace crates that show how to use
 - [x] Smart Threading (Completely ignore threading for files smaller than 1 MB).
 - [x] Package manager support (Windows: WinGet)
 - [x] Examples
-- [ ] Config file support (furl.toml)
+- [x] Config file support (`~/.config/.furl/config.toml`)
 - [ ] Support for Proxy and Basic Auth
 - [ ] Resume interrupted downloads (Checkpoints)
 - [ ] Package manager support (Linux: APT)

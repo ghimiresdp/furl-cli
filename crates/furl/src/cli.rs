@@ -15,12 +15,18 @@ pub enum FurlCommand {
     /// view or manage furl's configuration.
     ///
     /// `furl config` lists every value, `furl config <key>` prints one
-    /// value, and `furl config <key> <value>` sets and saves it.
+    /// value, `furl config <key> <value>` sets and saves it, and
+    /// `furl config --reset` restores the defaults.
     Config {
         /// configuration key, e.g. threads, max_chunk_size, download_dir
+        #[arg(conflicts_with = "reset")]
         key: Option<String>,
         /// value to set `key` to; omit to just read the current value
+        #[arg(conflicts_with = "reset")]
         value: Option<String>,
+        /// reset the configuration file back to its defaults
+        #[arg(long)]
+        reset: bool,
     },
 }
 
@@ -107,7 +113,8 @@ mod tests {
             args.command,
             Some(FurlCommand::Config {
                 key: None,
-                value: None
+                value: None,
+                reset: false
             })
         ));
     }
@@ -120,7 +127,8 @@ mod tests {
             args.command,
             Some(FurlCommand::Config {
                 key: Some(ref key),
-                value: None
+                value: None,
+                reset: false
             }) if key == "threads"
         ));
     }
@@ -133,8 +141,30 @@ mod tests {
             args.command,
             Some(FurlCommand::Config {
                 key: Some(ref key),
-                value: Some(ref value)
+                value: Some(ref value),
+                reset: false
             }) if key == "threads" && value == "16"
         ));
+    }
+
+    #[test]
+    fn parses_config_reset_flag() {
+        let args = FurlCliArgs::try_parse_from(["furl", "config", "--reset"]).unwrap();
+
+        assert!(matches!(
+            args.command,
+            Some(FurlCommand::Config {
+                key: None,
+                value: None,
+                reset: true
+            })
+        ));
+    }
+
+    #[test]
+    fn rejects_reset_combined_with_key() {
+        let result = FurlCliArgs::try_parse_from(["furl", "config", "threads", "--reset"]);
+
+        assert!(result.is_err());
     }
 }

@@ -12,6 +12,7 @@
 use clap::Parser;
 use furl_cli::config::{format_config, get, load_config, persist, set};
 use furl_cli::{FurlCliArgs, FurlCommand};
+use furl_core::DownloadConfig;
 use furl_core::{Downloader, GraphicalProgressReporter};
 use regex::Regex;
 use std::process::exit;
@@ -25,7 +26,17 @@ async fn main() {
         std::process::exit(1);
     });
 
-    if let Some(FurlCommand::Config { key, value }) = args.command {
+    if let Some(FurlCommand::Config { key, value, reset }) = args.command {
+        if reset {
+            let defaults = DownloadConfig::default();
+            if let Err(err) = persist(&defaults) {
+                eprintln!("Error: {err}");
+                exit(1);
+            }
+            print!("{}", format_config(&defaults));
+            return;
+        }
+
         let config = load_config();
 
         let Some(key) = key else {

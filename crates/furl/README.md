@@ -125,6 +125,10 @@ furl config threads
 # set and save a value
 furl config threads 16
 
+# max_chunk_size accepts a human-readable size (B, KB, MB, GB, TB) or a
+# plain byte count
+furl config max_chunk_size 5MB
+
 # restore the built-in defaults
 furl config --reset
 ```

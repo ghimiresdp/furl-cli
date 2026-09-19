@@ -29,8 +29,15 @@ fn load_config_from(path: &PathBuf) -> DownloadConfig {
         return config;
     }
 
-    let Ok(contents) = fs::read_to_string(path) else {
-        return DownloadConfig::default();
+    let contents = match fs::read_to_string(path) {
+        Ok(contents) => contents,
+        Err(err) => {
+            eprintln!(
+                "Warning: could not read config file at {}: {err}. Using defaults.",
+                path.display()
+            );
+            return DownloadConfig::default();
+        }
     };
 
     toml_edit::de::from_str(&contents).unwrap_or_else(|err| {
@@ -151,6 +158,32 @@ mod tests {
             "this is not valid toml ==="
         );
 
+        fs::remove_dir_all(path.parent().unwrap()).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn load_config_from_falls_back_to_defaults_on_unreadable_file() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let path = temp_config_path();
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(&path, "threads = 16\n").unwrap();
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o000)).unwrap();
+
+        if fs::read_to_string(&path).is_ok() {
+            // running with elevated privileges that ignore permission bits
+            // (e.g. root/CI); the read-failure path can't be exercised here
+            fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+            fs::remove_dir_all(path.parent().unwrap()).unwrap();
+            return;
+        }
+
+        let config = load_config_from(&path);
+
+        assert_eq!(config, DownloadConfig::default());
+
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
         fs::remove_dir_all(path.parent().unwrap()).unwrap();
     }
 

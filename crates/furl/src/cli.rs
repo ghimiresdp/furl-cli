@@ -21,7 +21,9 @@ pub enum FurlCommand {
         /// configuration key, e.g. threads, max_chunk_size, download_dir
         #[arg(conflicts_with = "reset")]
         key: Option<String>,
-        /// value to set `key` to; omit to just read the current value
+        /// value to set `key` to; omit to just read the current value.
+        /// max_chunk_size accepts a human-readable size (e.g. 512B, 10KB,
+        /// 5MB, 1GB) or a plain byte count
         #[arg(conflicts_with = "reset")]
         value: Option<String>,
         /// reset the configuration file back to its defaults

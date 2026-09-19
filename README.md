@@ -28,7 +28,26 @@ the simplicity of cURL and the robustness of wget.
 
 ## Installation
 
-You can install `furl` using WinGet, Cargo, or by building it from source.
+You can install `furl` using the install script, WinGet, Cargo, or by building
+it from source.
+
+### Quick Install (Linux, macOS, Windows)
+
+The install script downloads the right pre-built binary for your OS/architecture
+from the [latest release](https://github.com/ghimiresdp/furl-cli/releases/latest)
+and puts it on your `PATH`. No Rust toolchain required.
+
+Linux / macOS:
+
+```shell
+curl -LsSf https://raw.githubusercontent.com/ghimiresdp/furl-cli/main/scripts/install.sh | sh
+```
+
+Windows (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/ghimiresdp/furl-cli/main/scripts/install.ps1 | iex"
+```
 
 ### Windows (Recommended: WinGet)
 
@@ -63,7 +82,10 @@ cargo build --release
 
 ### Pre-built Binaries
 
-If `furl` is not yet available in your package manager, you can download pre-built binaries from the **Assets** section of the [latest release](https://github.com/ghimiresdp/furl-cli/releases/latest).
+The [Quick Install](#quick-install-linux-macos-windows) script above is the
+easiest way to get a pre-built binary. If you'd rather install one by hand
+(or need a platform the script doesn't cover), download it from the
+**Assets** section of the [latest release](https://github.com/ghimiresdp/furl-cli/releases/latest).
 
 If you need an older version, browse all published releases in the [Releases](https://github.com/ghimiresdp/furl-cli/releases) section and check the **Assets** section for that release.
 
@@ -104,41 +126,39 @@ furl [URL] -o [path/to/the/directory]
 furl https://raw.githubusercontent.com/ghimiresdp/furl-cli/refs/heads/main/res/images/example.png -o ./tmp -t 32
 ```
 
+#### Configuration
+
+`furl` reads defaults for `download_dir`, `threads`, and `max_chunk_size` from
+a config file at `~/.config/.furl/config.toml` (path varies by OS; resolved
+via [`dirs::config_dir()`](https://docs.rs/dirs)). The file is created with
+built-in defaults the first time `furl` runs, with each key preceded by a
+comment explaining what it does, so it's safe to open and hand-edit. Any
+`--out`, `--threads`, or `--chunksize` flag you pass on the command line
+overrides the config file for that run only. `--chunksize`/`-c` accepts the
+same format as `max_chunk_size` below: a plain byte count, or a
+human-readable size (`512KB`, `5MB`, `1GB`).
+
+Manage it with the `furl config` subcommand:
+
+```bash
+# list every value
+furl config
+
+# read a single value
+furl config threads
+
+# set and save a value
+furl config threads 16
+
+# max_chunk_size accepts a human-readable size (B, KB, MB, GB, TB) or a
+# plain byte count
+furl config max_chunk_size 5MB
+
+# restore the built-in defaults
+furl config --reset
+```
+
 ### Library Mode
-
-Add the latest version of `furl-cli` without default features to your `Cargo.toml`
-
-#### Example
-
-```toml
-[dependencies]
-furl-cli = { version = "0.8.1", default-features = false }
-
-# example async library for async operations
-tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }
-```
-
-or install through `cargo add` command:
-
-```bash
-cargo add furl-cli --no-default-features
-```
-
-If you want to use graphical indicators, you can enable the `progress` feature.
-
-```toml
-[dependencies]
-furl-cli = { version = "0.8.1", default-features = false, features = ["progress"] }
-
-# example async library for async operations
-tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }
-```
-
-or install through `cargo add` command:
-
-```bash
-cargo add furl-cli --no-default-features --features progress
-```
 
 In library mode, you can just import the `Downloader` struct and use its
 `download()` method to download files.
@@ -190,7 +210,7 @@ directory. These are standalone workspace crates that show how to use
 - [x] Smart Threading (Completely ignore threading for files smaller than 1 MB).
 - [x] Package manager support (Windows: WinGet)
 - [x] Examples
-- [ ] Config file support (furl.toml)
+- [x] Config file support (`~/.config/.furl/config.toml`)
 - [ ] Support for Proxy and Basic Auth
 - [ ] Resume interrupted downloads (Checkpoints)
 - [ ] Package manager support (Linux: APT)

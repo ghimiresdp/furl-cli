@@ -30,10 +30,11 @@ pub fn set(config: DownloadConfig, key: &str, value: &str) -> Result<DownloadCon
 }
 
 /// Parses a human-readable byte size such as `10485760`, `10KB`, `5.5MB`, or
-/// `1 GB` into a raw byte count. The unit is optional (bytes assumed) and
-/// case-insensitive; units use binary multiples (1 KB = 1024 bytes), matching
-/// how `--chunksize` already interprets MB on the command line.
-fn parse_size(input: &str) -> Result<u64, String> {
+/// `1 GB` into a raw byte count. A bare number with no unit is treated as an
+/// exact byte count. Units are case-insensitive and use binary multiples (1
+/// KB = 1024 bytes). Shared by `furl config max_chunk_size` and the
+/// `--chunksize` CLI flag, so both interpret sizes the same way.
+pub(crate) fn parse_size(input: &str) -> Result<u64, String> {
     const KB: f64 = 1024.0;
     const MB: f64 = KB * 1024.0;
     const GB: f64 = MB * 1024.0;

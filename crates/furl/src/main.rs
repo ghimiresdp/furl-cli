@@ -44,7 +44,7 @@ async fn main() {
         config = config.set_threads(threads);
     }
     if let Some(chunksize) = args.download.chunksize {
-        config = config.set_max_chunk_size(chunksize as u64 * 1024 * 1024);
+        config = config.set_max_chunk_size(chunksize);
     }
 
     let filename = args.download.filename;

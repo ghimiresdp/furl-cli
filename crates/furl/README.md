@@ -112,7 +112,9 @@ via [`dirs::config_dir()`](https://docs.rs/dirs)). The file is created with
 built-in defaults the first time `furl` runs, with each key preceded by a
 comment explaining what it does, so it's safe to open and hand-edit. Any
 `--out`, `--threads`, or `--chunksize` flag you pass on the command line
-overrides the config file for that run only.
+overrides the config file for that run only. `--chunksize`/`-c` accepts the
+same format as `max_chunk_size` below: a plain byte count, or a
+human-readable size (`512KB`, `5MB`, `1GB`).
 
 Manage it with the `furl config` subcommand:
 

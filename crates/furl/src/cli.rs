@@ -1,5 +1,7 @@
 use clap::{Args, Parser, Subcommand};
 
+use crate::config::parse_size;
+
 #[derive(Debug, Parser)]
 #[command(version, about, long_about=None, arg_required_else_help(true))]
 pub struct FurlCliArgs {
@@ -52,10 +54,11 @@ pub struct DownloadArgs {
     #[arg(short, long, value_parser = clap::value_parser!(u8).range(1..=255))]
     pub threads: Option<u8>,
 
-    /// Number of chunks in MB, maximum allowed 100. Defaults to the value
-    /// from the config file, or 10 if not configured
-    #[arg(short, long, value_parser = clap::value_parser!(u8).range(1..=100))]
-    pub chunksize: Option<u8>,
+    /// Maximum size of a download chunk, in bytes; also accepts a unit
+    /// suffix, e.g. 512KB, 5MB, 1GB. Defaults to the value from the config
+    /// file, or 10MB if not configured
+    #[arg(short, long, value_parser = parse_size)]
+    pub chunksize: Option<u64>,
 }
 
 #[cfg(test)]
@@ -93,6 +96,31 @@ mod tests {
         assert_eq!(args.download.filename, Some("file.zip".to_string()));
         assert_eq!(args.download.threads, Some(16));
         assert_eq!(args.download.chunksize, Some(20));
+    }
+
+    #[test]
+    fn parses_chunksize_with_explicit_unit() {
+        let args = FurlCliArgs::try_parse_from([
+            "furl",
+            "https://example.com/file.zip",
+            "--chunksize",
+            "512KB",
+        ])
+        .unwrap();
+
+        assert_eq!(args.download.chunksize, Some(512 * 1024));
+    }
+
+    #[test]
+    fn rejects_chunksize_with_unknown_unit() {
+        let result = FurlCliArgs::try_parse_from([
+            "furl",
+            "https://example.com/file.zip",
+            "--chunksize",
+            "5XB",
+        ]);
+
+        assert!(result.is_err());
     }
 
     #[test]

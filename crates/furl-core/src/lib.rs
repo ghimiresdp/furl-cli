@@ -13,13 +13,12 @@
 //!
 //! ### cli
 //! ```bash
-//! cargo add furl-cli --no-default-features
-//! ```
+//! cargo add furl-cli
 //!
 //! ### `cargo.toml`
 //! ```toml
 //! [dependencies]
-//! furl-cli = { version = "0.8.1", default-features = false }
+//! furl-cli = { version = "^0.9.1"}
 //!
 //! # example async library for async operations
 //! tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }
@@ -58,9 +57,10 @@
 //! furl-core = { version = "*", features = ["progress"] }
 //!
 //! ```
-pub mod engine;
+pub mod core;
 pub mod features;
 
-pub use engine::{DownloadConfig, Downloader, ProgressReporter};
+pub use core::config::DownloadConfig;
+pub use core::engine::{Downloader, ProgressReporter};
 
 pub use features::*;

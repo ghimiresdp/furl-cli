@@ -81,10 +81,46 @@ pub fn persist(config: &DownloadConfig) -> Result<(), String> {
 }
 
 /// Renders a `DownloadConfig` as TOML, in the same shape a user could paste
-/// into their config file.
+/// into their config file. Each key is preceded by a short comment
+/// explaining what it does, since this is the file users are expected to
+/// hand-edit.
 pub fn format_config(config: &DownloadConfig) -> String {
-    toml_edit::ser::to_string_pretty(config)
-        .unwrap_or_else(|err| format!("# error serializing config: {err}\n"))
+    let mut doc = toml_edit::DocumentMut::new();
+
+    doc["download_dir"] = toml_edit::value(config.download_dir.display().to_string());
+    doc["max_chunk_size"] = toml_edit::value(config.max_chunk_size as i64);
+    doc["threads"] = toml_edit::value(config.threads as i64);
+
+    set_key_comment(
+        &mut doc,
+        "download_dir",
+        &["directory downloaded files are saved to"],
+    );
+    set_key_comment(
+        &mut doc,
+        "max_chunk_size",
+        &[
+            "maximum size of a single download chunk, in bytes",
+            "(`furl config max_chunk_size <value>` also accepts sizes like 10KB, 5MB, 1GB)",
+        ],
+    );
+    set_key_comment(
+        &mut doc,
+        "threads",
+        &["number of concurrent download threads (1-255)"],
+    );
+
+    doc.to_string()
+}
+
+/// Sets `key`'s leading comment to `lines`, one `# `-prefixed TOML comment
+/// line per entry. No-op if `key` isn't present in `doc`.
+fn set_key_comment(doc: &mut toml_edit::DocumentMut, key: &str, lines: &[&str]) {
+    let Some(mut key) = doc.key_mut(key) else {
+        return;
+    };
+    let prefix: String = lines.iter().map(|line| format!("# {line}\n")).collect();
+    key.leaf_decor_mut().set_prefix(prefix);
 }
 
 #[cfg(test)]
@@ -195,6 +231,15 @@ mod tests {
         let parsed: DownloadConfig = toml_edit::de::from_str(&formatted).unwrap();
 
         assert_eq!(parsed, config);
+    }
+
+    #[test]
+    fn format_config_includes_explanatory_comments() {
+        let formatted = format_config(&DownloadConfig::default());
+
+        assert!(formatted.contains("# directory downloaded files are saved to"));
+        assert!(formatted.contains("# maximum size of a single download chunk, in bytes"));
+        assert!(formatted.contains("# number of concurrent download threads (1-255)"));
     }
 
     #[test]

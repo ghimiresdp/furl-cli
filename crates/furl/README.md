@@ -109,9 +109,10 @@ furl https://raw.githubusercontent.com/ghimiresdp/furl-cli/refs/heads/main/res/i
 `furl` reads defaults for `download_dir`, `threads`, and `max_chunk_size` from
 a config file at `~/.config/.furl/config.toml` (path varies by OS; resolved
 via [`dirs::config_dir()`](https://docs.rs/dirs)). The file is created with
-built-in defaults the first time `furl` runs. Any `--out`, `--threads`, or
-`--chunksize` flag you pass on the command line overrides the config file for
-that run only.
+built-in defaults the first time `furl` runs, with each key preceded by a
+comment explaining what it does, so it's safe to open and hand-edit. Any
+`--out`, `--threads`, or `--chunksize` flag you pass on the command line
+overrides the config file for that run only.
 
 Manage it with the `furl config` subcommand:
 

@@ -20,10 +20,7 @@ use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() {
-    let args = FurlCliArgs::try_parse().unwrap_or_else(|e| {
-        eprintln!("Error parsing arguments: {}", e);
-        std::process::exit(1);
-    });
+    let args = FurlCliArgs::parse();
 
     if let Some(FurlCommand::Config { key, value, reset }) = args.command {
         config::handle(key, value, reset);

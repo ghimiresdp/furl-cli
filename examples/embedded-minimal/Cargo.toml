@@ -6,9 +6,9 @@ publish = false
 
 [dependencies]
 # For local development in the repository, uncomment the path below:
-# furl-core = { path = "../../crates/furl-core", features = ["progress"] }
+furl-core = { path = "../../crates/furl-core", features = ["progress"] }
 
 # For standalone use (outside the repository), use the crates.io version:
-furl-core = { version = "0.10.0", features = ["progress"] }
+# furl-core = { version = "0.10.0", features = ["progress"] }
 
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

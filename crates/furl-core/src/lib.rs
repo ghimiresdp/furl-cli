@@ -5,20 +5,22 @@
 //!
 //! ## installation
 //!
-//! While using furl-core, you do not need to install default features unless
-//! you want to use the progress reporter or the cli features.
+//! furl-core has no default features. Enable `progress` if you want the
+//! built-in graphical progress reporter, or `serde` if you want
+//! `DownloadConfig` to be (de)serializable.
 //!
-//! You can add `furl-cli` to your project by adding it to your `cargo.toml` file.
+//! You can add `furl-core` to your project by adding it to your `cargo.toml` file.
 //! or you can use the command line to add it to your project.
 //!
-//! ### cli
+//! ### Using `cargo add`
 //! ```bash
-//! cargo add furl-cli
+//! cargo add furl-core
+//! ```
 //!
 //! ### `cargo.toml`
 //! ```toml
 //! [dependencies]
-//! furl-cli = { version = "^0.9.1"}
+//! furl-core = { version = "0.10.0" }
 //!
 //! # example async library for async operations
 //! tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }

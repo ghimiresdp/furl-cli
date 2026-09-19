@@ -18,8 +18,12 @@ name = "furl"
 path = "src/main.rs"
 
 [dependencies]
-# workspace dependencies
-furl-core = { workspace = true, features = ["progress", "serde"] }
+# sibling workspace crate; version is bumped automatically by `cargo ws
+# version` (unlike a `workspace = true` dependency, which it can't see)
+furl-core = { version = "0.10.0", path = "../furl-core", features = [
+    "progress",
+    "serde",
+] }
 
 # external dependencies
 serde = { workspace = true, features = ["derive"] }

@@ -282,7 +282,7 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 name = "embedded-minimal"
 version = "0.1.0"
 dependencies = [
- "furl-core 0.9.0",
+ "furl-core",
  "tokio",
 ]
 
@@ -336,11 +336,11 @@ checksum = "42703706b716c37f96a77aea830392ad231f44c9e9a67872fa5548707e11b11c"
 
 [[package]]
 name = "furl-cli"
-version = "0.8.1"
+version = "0.9.0"
 dependencies = [
  "clap",
  "dirs",
- "furl-core 0.9.1",
+ "furl-core",
  "futures-util",
  "indicatif",
  "regex",
@@ -352,20 +352,7 @@ dependencies = [
 
 [[package]]
 name = "furl-core"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4076081a4c00b75a81ec453c71180962969e17e9773c7d01174caa5effcf778"
-dependencies = [
- "futures-util",
- "indicatif",
- "regex",
- "reqwest",
- "tokio",
-]
-
-[[package]]
-name = "furl-core"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "futures-util",
  "indicatif",
@@ -879,7 +866,7 @@ dependencies = [
 name = "no-indicator"
 version = "0.1.0"
 dependencies = [
- "furl-core 0.9.0",
+ "furl-core",
  "tokio",
 ]
 

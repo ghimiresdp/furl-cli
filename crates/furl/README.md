@@ -28,7 +28,26 @@ the simplicity of cURL and the robustness of wget.
 
 ## Installation
 
-You can install `furl` using WinGet, Cargo, or by building it from source.
+You can install `furl` using the install script, WinGet, Cargo, or by building
+it from source.
+
+### Quick Install (Linux, macOS, Windows)
+
+The install script downloads the right pre-built binary for your OS/architecture
+from the [latest release](https://github.com/ghimiresdp/furl-cli/releases/latest)
+and puts it on your `PATH`. No Rust toolchain required.
+
+Linux / macOS:
+
+```shell
+curl -LsSf https://raw.githubusercontent.com/ghimiresdp/furl-cli/main/scripts/install.sh | sh
+```
+
+Windows (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://raw.githubusercontent.com/ghimiresdp/furl-cli/main/scripts/install.ps1 | iex"
+```
 
 ### Windows (Recommended: WinGet)
 
@@ -63,7 +82,10 @@ cargo build --release
 
 ### Pre-built Binaries
 
-If `furl` is not yet available in your package manager, you can download pre-built binaries from the **Assets** section of the [latest release](https://github.com/ghimiresdp/furl-cli/releases/latest).
+The [Quick Install](#quick-install-linux-macos-windows) script above is the
+easiest way to get a pre-built binary. If you'd rather install one by hand
+(or need a platform the script doesn't cover), download it from the
+**Assets** section of the [latest release](https://github.com/ghimiresdp/furl-cli/releases/latest).
 
 If you need an older version, browse all published releases in the [Releases](https://github.com/ghimiresdp/furl-cli/releases) section and check the **Assets** section for that release.
 

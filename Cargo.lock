@@ -336,7 +336,7 @@ checksum = "42703706b716c37f96a77aea830392ad231f44c9e9a67872fa5548707e11b11c"
 
 [[package]]
 name = "furl-cli"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "clap",
  "dirs",

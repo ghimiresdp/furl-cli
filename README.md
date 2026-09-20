@@ -209,14 +209,11 @@ directory. These are standalone workspace crates that show how to use
 - [x] Real-time progress bars
 - [x] Smart Threading (Completely ignore threading for files smaller than 1 MB).
 - [x] Package manager support (Windows: WinGet)
+- [x] Linux and windows installation script (see [Quick Install](#quick-install-linux-macos-windows) section)
 - [x] Examples
 - [x] Config file support (`~/.config/.furl/config.toml`)
 - [ ] Support for Proxy and Basic Auth
 - [ ] Resume interrupted downloads (Checkpoints)
-- [ ] Package manager support (Linux: APT)
-- [ ] Package manager support (Linux: Flatpak)
-- [ ] Package manager support (Linux: Snap)
-- [ ] Package manager support (macOS: Homebrew)
 
 ## 🤝 Contributing
 

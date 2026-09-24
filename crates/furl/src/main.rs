@@ -60,12 +60,28 @@ async fn main() {
         let mut downloader = Downloader::new(&url)
             .with_config(config)
             .with_reporter(GraphicalProgressReporter::new());
-        if downloader
-            .download(&out, filename, Some(threads))
-            .await
-            .is_ok()
-        {
-            println!("Download Complete!")
+        if let Some(auth) = args.download.user {
+            if url.starts_with("http://") {
+                eprintln!(
+                    "Warning: sending credentials over plain HTTP; they can be read by anyone on the network"
+                );
+            }
+            let password = match auth.password {
+                Some(password) => password,
+                None => rpassword::prompt_password(format!("Password for '{}': ", auth.username))
+                    .unwrap_or_else(|err| {
+                        eprintln!("Error: could not read password: {err}");
+                        exit(1);
+                    }),
+            };
+            downloader = downloader.with_basic_auth(auth.username, Some(password));
+        }
+        match downloader.download(&out, filename, Some(threads)).await {
+            Ok(()) => println!("Download Complete!"),
+            Err(err) => {
+                eprintln!("Error: {err}");
+                exit(1);
+            }
         }
         return;
     }

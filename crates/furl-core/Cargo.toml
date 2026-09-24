@@ -36,6 +36,10 @@ reqwest = { version = "0.13.4", features = ["json", "stream"] }
 indicatif = { version = "0.18.4", optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 
+[dev-dependencies]
+# the basic auth integration tests run a tiny in-process HTTP server
+tokio = { workspace = true, features = ["net", "io-util"] }
+
 
 [package.metadata.workspaces]
 independent = true

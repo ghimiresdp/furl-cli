@@ -93,6 +93,7 @@ This section covers the main public types and methods you will use.
   - `Downloader::new<S: Into<String>>(url: S) -> Downloader`
   - `with_config(self, config: DownloadConfig) -> Self`
   - `with_reporter<R: ProgressReporter + Send + Sync + 'static>(self, reporter: R) -> Self`
+  - `with_basic_auth<U: Into<String>, P: Into<String>>(self, username: U, password: Option<P>) -> Self` — authenticates every request with HTTP Basic Authentication
   - `async fn download(&mut self, path: &str, filename: Option<String>, threads: Option<u8>) -> Result<(), Box<dyn std::error::Error + Send + Sync>>`
 
 - `DownloadConfig` — configuration for chunking
@@ -115,6 +116,8 @@ Notes:
   without threads and without chunked progress (a simple spinner/ticker is used
   if you attach a reporter).
 - Files smaller than 1 MB are downloaded without spawning worker threads.
+- HTTP error responses (4xx/5xx, e.g. `401 Unauthorized`) make `download`
+  return an error instead of saving the error body as the file.
 
 ## Examples in this repository
 
@@ -137,8 +140,8 @@ cargo test -p furl-core
 - The project separates concerns: `furl-core` implements the download engine,
   while `furl-cli` provides the command-line interface and user-facing UX.
   This split keeps `furl-core` reusable with minimal optional dependencies.
-- Planned improvements (non-exhaustive): resume/checkpoint support, proxy and
-  auth options, finer-grained configuration.
+- Planned improvements (non-exhaustive): resume/checkpoint support, proxy
+  options, finer-grained configuration.
 
 For architecture decisions, see `docs/adr/` in the repository.
 

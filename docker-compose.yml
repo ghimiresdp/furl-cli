@@ -1,0 +1,48 @@
+# Local test server for furl's HTTP Basic Authentication support.
+#
+#   ./e2e-basic-auth.sh      # build furl, start the server, verify everything
+#   docker compose up -d     # or just start it (test files generated on first run)
+#   docker compose down -v   # stop and delete the generated files
+#
+# Test credentials: furl / furl-test (see docker/basic-auth/README.md)
+
+name: furl-basic-auth
+
+services:
+  # Generates the test files once into the shared volume, then exits.
+  # Random content makes misplaced or corrupted chunks show up in checksums.
+  files:
+    image: alpine:3.20
+    volumes:
+      - files:/files
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        cd /files
+        if [ -f SHA256SUMS ]; then echo "test files already exist"; exit 0; fi
+        : > empty.bin
+        dd if=/dev/urandom of=tiny.bin bs=1 count=1 2>/dev/null
+        dd if=/dev/urandom of=small.bin bs=1K count=300 2>/dev/null
+        dd if=/dev/urandom of=medium.bin bs=1M count=5 2>/dev/null
+        dd if=/dev/urandom of=large.bin bs=1M count=64 2>/dev/null
+        dd if=/dev/urandom of=huge.bin bs=1M count=512 2>/dev/null
+        seq 1 200000 > text.txt
+        sha256sum *.bin text.txt > SHA256SUMS
+        ls -l
+
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      files:
+        condition: service_completed_successfully
+    ports:
+      - "${FURL_TEST_PORT:-8080}:80"
+    volumes:
+      - files:/files:ro
+      - ./docker/basic-auth/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/basic-auth/htpasswd:/etc/nginx/htpasswd:ro
+
+volumes:
+  files:

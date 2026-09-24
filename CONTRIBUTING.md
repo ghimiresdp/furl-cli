@@ -25,6 +25,31 @@ Want to contribute? Just fork the project and follow these steps:
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+### Testing
+
+There are two kinds of tests:
+
+| What                     | Command                   | Needs          | Runs in CI |
+| ------------------------ | ------------------------- | -------------- | ---------- |
+| Test suite               | `cargo test --workspace`  | Rust only      | yes        |
+| Basic Auth end-to-end    | `./e2e-basic-auth.sh`     | Docker, curl   | no         |
+
+**Test suite.** Unit tests and integration tests for every crate, including
+Basic Auth tests that run against an in-process HTTP server, so no network or
+Docker is needed. Run it before every PR; CI also runs `cargo fmt --check` and
+`cargo clippy -- -D warnings`.
+
+**Basic Auth end-to-end check.** `./e2e-basic-auth.sh` (from the repository
+root) tests the real `furl` binary against a real nginx server that requires
+Basic Auth. It builds furl, starts the server from
+[docker-compose.yml](docker-compose.yml) if it isn't running, then downloads
+files from 0 B to 512 MB and verifies their checksums, including multi-chunk
+downloads. It also checks that wrong or missing credentials are rejected.
+Run it when you change authentication, request handling, or chunked
+downloads. The server stays up for faster reruns; stop it with
+`docker compose down -v`. See [docker/basic-auth](docker/basic-auth/README.md)
+for the credentials, test files and options.
+
 ### Submitting a Pull Request
 
 Before submitting your PR, make sure your branch is up to date with the base

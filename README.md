@@ -126,6 +126,26 @@ furl [URL] -o [path/to/the/directory]
 furl https://raw.githubusercontent.com/ghimiresdp/furl-cli/refs/heads/main/res/images/example.png -o ./tmp -t 32
 ```
 
+#### With Basic Authentication
+
+Pass credentials for servers protected by HTTP Basic Authentication with
+`-u`/`--user`, in the same `USER[:PASSWORD]` form as cURL. If you leave out
+the password, `furl` prompts for it, which keeps it out of your shell history.
+Credentials embedded in the URL (`https://user:pass@host/file`) also work.
+
+```bash
+# prompt for the password
+furl https://example.com/private/file.zip -u alice
+
+# pass the password inline (everything after the first `:` is the password)
+furl https://example.com/private/file.zip -u alice:s3cret
+```
+
+Credentials are sent with every chunk request and are never saved to the
+config file. `furl` warns when they would be sent over plain `http://`, and a
+wrong or missing password fails with the server's `401 Unauthorized` instead
+of saving the error page as the file.
+
 #### Configuration
 
 `furl` reads defaults for `download_dir`, `threads`, and `max_chunk_size` from
@@ -209,14 +229,12 @@ directory. These are standalone workspace crates that show how to use
 - [x] Real-time progress bars
 - [x] Smart Threading (Completely ignore threading for files smaller than 1 MB).
 - [x] Package manager support (Windows: WinGet)
+- [x] Linux and windows installation script (see [Quick Install](#quick-install-linux-macos-windows) section)
 - [x] Examples
 - [x] Config file support (`~/.config/.furl/config.toml`)
-- [ ] Support for Proxy and Basic Auth
+- [x] Basic Auth (`-u`/`--user`)
+- [ ] Support for Proxy
 - [ ] Resume interrupted downloads (Checkpoints)
-- [ ] Package manager support (Linux: APT)
-- [ ] Package manager support (Linux: Flatpak)
-- [ ] Package manager support (Linux: Snap)
-- [ ] Package manager support (macOS: Homebrew)
 
 ## 🤝 Contributing
 

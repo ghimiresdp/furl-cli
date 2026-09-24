@@ -8,7 +8,7 @@ use std::{
 };
 
 use reqwest::{
-    self, Url,
+    self, RequestBuilder, Response, StatusCode, Url,
     header::{CONTENT_DISPOSITION, CONTENT_RANGE, HeaderMap, RANGE},
 };
 
@@ -40,6 +40,45 @@ impl ProgressReporter for NoopReporter {
     fn on_finish(&self, _chunk_index: usize) {}
 }
 
+/// Credentials for HTTP Basic Authentication.
+///
+/// Kept on the [`Downloader`] rather than in `DownloadConfig`, since the
+/// config is meant to be persisted and credentials should never be written
+/// to disk.
+#[derive(Clone)]
+pub struct BasicAuth {
+    pub username: String,
+    pub password: Option<String>,
+}
+
+// hand-written so the password never leaks through `{:?}` in logs or panics
+impl std::fmt::Debug for BasicAuth {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BasicAuth")
+            .field("username", &self.username)
+            .field("password", &self.password.as_ref().map(|_| "***"))
+            .finish()
+    }
+}
+
+/// Turns an HTTP error status (4xx/5xx) into an error, so an error page such
+/// as a `401 Unauthorized` body is never saved as if it were the file.
+///
+/// `416 Range Not Satisfiable` is let through: it is what servers answer to
+/// the `bytes=0-0` probe for an empty file.
+fn check_status(response: Response) -> Result<Response, Box<dyn Error + Send + Sync>> {
+    let status = response.status();
+    if (status.is_client_error() || status.is_server_error())
+        && status != StatusCode::RANGE_NOT_SATISFIABLE
+    {
+        return Err(Box::from(format!(
+            "server responded with {status} for {}",
+            response.url()
+        )));
+    }
+    Ok(response)
+}
+
 #[derive(Debug)]
 struct Chunk {
     start_byte: u64,
@@ -65,6 +104,7 @@ pub struct Downloader {
     chunks: Arc<Mutex<Vec<Chunk>>>, // this stores downloaded chunk size
     reporter: Arc<dyn ProgressReporter + Send + Sync>,
     config: Arc<DownloadConfig>,
+    auth: Option<Arc<BasicAuth>>,
 }
 
 pub trait HeaderUtils {
@@ -145,6 +185,7 @@ impl Downloader {
             chunks: Arc::new(Mutex::new(Vec::new())),
             reporter: Arc::new(NoopReporter),
             config: Arc::new(DownloadConfig::new()),
+            auth: None,
         }
     }
 
@@ -161,6 +202,33 @@ impl Downloader {
         self
     }
 
+    /// Authenticates every request (the initial probe and each chunk) with
+    /// HTTP Basic Authentication.
+    ///
+    /// Credentials embedded in the URL (`https://user:pass@host/file`) are
+    /// also honored without calling this.
+    pub fn with_basic_auth<U: Into<String>, P: Into<String>>(
+        mut self,
+        username: U,
+        password: Option<P>,
+    ) -> Self {
+        self.auth = Some(Arc::new(BasicAuth {
+            username: username.into(),
+            password: password.map(Into::into),
+        }));
+        self
+    }
+
+    /// Starts a GET request for the download url, with credentials attached
+    /// when basic auth is configured.
+    fn get_request(&self, client: &reqwest::Client) -> RequestBuilder {
+        let builder = client.get(&self.url);
+        match &self.auth {
+            Some(auth) => builder.basic_auth(&auth.username, auth.password.as_ref()),
+            None => builder,
+        }
+    }
+
     async fn get_chunk(
         &self,
         range: Option<(u64, u64)>,
@@ -169,12 +237,12 @@ impl Downloader {
         chunk_index: Option<usize>,
     ) -> Result<u64, Box<dyn std::error::Error + Send + Sync>> {
         let client = reqwest::Client::new();
-        let mut builder = client.get(&self.url);
+        let mut builder = self.get_request(&client);
         if let Some((start, end)) = range {
             builder = builder.header(RANGE, &format!("bytes={start}-{end}"));
             reporter.on_start(chunk_index.unwrap_or(0), end - start + 1);
         }
-        let response = builder.send().await?;
+        let response = check_status(builder.send().await?)?;
         let mut stream = response.bytes_stream();
         let mut downloaded = 0u64;
         let mut chunk_data = Vec::new();
@@ -195,11 +263,16 @@ impl Downloader {
             }
         }
 
-        // Write to file at correct position
-        if let (Some(file), Some((start, _))) = (file, range) {
+        // Write to file at correct position; a whole-file (unranged)
+        // download starts at the beginning
+        if let Some(file) = file {
+            let start = range.map_or(0, |(start, _)| start);
             let mut f = file.lock().await;
             f.seek(SeekFrom::Start(start)).await?;
             f.write_all(&chunk_data).await?;
+            // tokio's File writes in the background; flush so the data is on
+            // disk before `download` returns
+            f.flush().await?;
         }
 
         reporter.on_finish(chunk_index.unwrap_or(0));
@@ -235,11 +308,12 @@ impl Downloader {
             None => 8,
         };
         // get response headers to get file name, length, etc.
-        let response = client
-            .get(&self.url)
-            .header(RANGE, "bytes=0-0")
-            .send()
-            .await?;
+        let response = check_status(
+            self.get_request(&client)
+                .header(RANGE, "bytes=0-0")
+                .send()
+                .await?,
+        )?;
         self.headers = response.headers().clone().to_owned();
 
         let filename = if let Some(filename) = filename {
@@ -312,6 +386,7 @@ impl Downloader {
                 let index_clone = Arc::clone(&index);
                 let reporter_clone = Arc::clone(&self.reporter);
                 let config = Arc::clone(&self.config);
+                let auth = self.auth.clone();
 
                 let task = tokio::spawn(async move {
                     let mut worker_total: u64 = 0;
@@ -337,6 +412,7 @@ impl Downloader {
                             chunks: Arc::clone(&chunks),
                             reporter: Arc::clone(&reporter_clone),
                             config: Arc::clone(&config),
+                            auth: auth.clone(),
                         };
 
                         // Download the chunk and accumulate the bytes downloaded by this worker
@@ -375,9 +451,8 @@ impl Downloader {
             // and just display ticks instead of progressbar since the size is unknown.
             let file_clone = Arc::clone(&file);
             println!("\n");
-            let _ = self
-                .get_chunk(None, Arc::clone(&self.reporter), Some(file_clone), None)
-                .await;
+            self.get_chunk(None, Arc::clone(&self.reporter), Some(file_clone), None)
+                .await?;
         }
 
         Ok(())

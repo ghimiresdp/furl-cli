@@ -1,4 +1,5 @@
 use clap::{Args, Parser, Subcommand};
+use furl_core::BasicAuth;
 
 use crate::config::parse_size;
 
@@ -59,6 +60,28 @@ pub struct DownloadArgs {
     /// file, or 10MB if not configured
     #[arg(short, long, value_parser = parse_size)]
     pub chunksize: Option<u64>,
+
+    /// Credentials for HTTP Basic Authentication, as USER[:PASSWORD]. If the
+    /// password is omitted, you will be prompted for it, which keeps it out
+    /// of your shell history
+    #[arg(short, long, value_name = "USER[:PASSWORD]", value_parser = parse_user)]
+    pub user: Option<BasicAuth>,
+}
+
+/// Splits `USER[:PASSWORD]` at the first `:`, the same way curl's `--user`
+/// does, so passwords may themselves contain colons.
+fn parse_user(input: &str) -> Result<BasicAuth, String> {
+    let (username, password) = match input.split_once(':') {
+        Some((username, password)) => (username, Some(password.to_string())),
+        None => (input, None),
+    };
+    if username.is_empty() {
+        return Err("username must not be empty".to_string());
+    }
+    Ok(BasicAuth {
+        username: username.to_string(),
+        password,
+    })
 }
 
 #[cfg(test)]
@@ -131,6 +154,50 @@ mod tests {
             "--threads",
             "256",
         ]);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn parses_user_with_password() {
+        let args = FurlCliArgs::try_parse_from([
+            "furl",
+            "https://example.com/file.zip",
+            "--user",
+            "alice:s3cr:et",
+        ])
+        .unwrap();
+
+        let auth = args.download.user.unwrap();
+        assert_eq!(auth.username, "alice");
+        // only the first colon separates username from password
+        assert_eq!(auth.password.as_deref(), Some("s3cr:et"));
+    }
+
+    #[test]
+    fn parses_user_without_password() {
+        let args =
+            FurlCliArgs::try_parse_from(["furl", "https://example.com/file.zip", "-u", "alice"])
+                .unwrap();
+
+        let auth = args.download.user.unwrap();
+        assert_eq!(auth.username, "alice");
+        assert_eq!(auth.password, None);
+    }
+
+    #[test]
+    fn parses_user_with_empty_password() {
+        let args =
+            FurlCliArgs::try_parse_from(["furl", "https://example.com/file.zip", "-u", "alice:"])
+                .unwrap();
+
+        assert_eq!(args.download.user.unwrap().password.as_deref(), Some(""));
+    }
+
+    #[test]
+    fn rejects_user_with_empty_username() {
+        let result =
+            FurlCliArgs::try_parse_from(["furl", "https://example.com/file.zip", "-u", ":secret"]);
 
         assert!(result.is_err());
     }

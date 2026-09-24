@@ -63,6 +63,6 @@ pub mod core;
 pub mod features;
 
 pub use core::config::DownloadConfig;
-pub use core::engine::{Downloader, ProgressReporter};
+pub use core::engine::{BasicAuth, Downloader, ProgressReporter};
 
 pub use features::*;
